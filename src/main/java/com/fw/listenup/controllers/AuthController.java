@@ -89,7 +89,6 @@ public class AuthController {
     //Stores an auth attempt in db
     @PostMapping("/auth/log")
     public Map<String, Boolean> logAuthAttempt(@RequestParam String email, @RequestParam boolean valid, HttpServletRequest request){
-        //Retrieve source IP
         logger.info("Logging authentication attempt in db");
 
         //Call to auth log service method
@@ -102,6 +101,25 @@ public class AuthController {
             res.put(resKey, isLogged);
         } catch(Exception e){
             logger.error("Auth log request server error: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+ 
+    //Generate email verification entry
+    @PostMapping("/auth/user/token")
+    public Map<String, Boolean> generateEmailVerificationToken(@RequestParam String email){
+        logger.info("Generating verification token for user " + email);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "tokenGenerated";
+        try{
+            boolean isGenerated = authService.generateEmailVerificationToken(email);
+            if(!isGenerated) logger.error("Failed to generate email auth token");
+            else logger.info("New email auth token has been generated for user " + email);
+            res.put(resKey, isGenerated);
+        } catch(Exception e){
+            logger.error("Email token generation error: " + e.toString());
             res.put(resKey, false);
         }
 

@@ -1,12 +1,14 @@
 package com.fw.listenup.dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -117,6 +119,7 @@ public class AuthDAO extends DAOBase{
     //Makes insert statement into login_attempts table with new credentials
     public boolean logAuthAttempt(String email, boolean valid, boolean userExists){
         boolean res = false;
+
         //Predefined values
         Timestamp logTime = new Timestamp(System.currentTimeMillis());
 
@@ -135,6 +138,99 @@ public class AuthDAO extends DAOBase{
                 res = true;
             } else{
                 logger.error("Something went wrong, the auth attempt was not logged");
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return res;
+    }
+
+    //Generates a new email token to be used for verification
+    public boolean generateEmailVerificationToken(String email) {
+        boolean res = false;
+
+        //Predefined values
+        String token = UUID.randomUUID().toString();
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        Date currentDate = new Date(currentTime.getTime());
+        Date nextDayDate = new Date(currentDate.getTime() + (24 * 60 * 60 * 1000)); // 24 hours * 60 minutes * 60 seconds * 1000 milliseconds
+        Timestamp expirationTime = new Timestamp(nextDayDate.getTime());
+
+        //Check for pre-existing token.  If one exists, delete it and recall method
+        if(emailTokenExists(email)){
+            boolean deleted = deleteEmailToken(email);
+            // if(deleted) generateEmailVerificationToken(email);
+        }
+
+        try(Connection con = getConnection()){
+            logger.info("Attempting to insert new email verification token");
+            String query = "insert into email_verification (uid, email, expires_by) values (?,?,?)";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, token);
+            stmt.setString(2, email);
+            stmt.setTimestamp(3, expirationTime);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Insert into email_verification successful for user " + email);
+                res = true;
+
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
+
+    //Checks for existing verification token.  If it exists, deletes current one and replaces it with 
+    //new token
+    private boolean emailTokenExists(String email){
+        logger.info("Checking for existing verification token");
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "select count(*) from email_verification where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                int count = rs.getInt(1);
+                if(count > 0){
+                    logger.info("Email token exists, generate new one");
+                    res = true;
+                } else{ 
+                    logger.info("Email token does not currently exist");
+                }
+            } else{
+                logger.error("There was an error when checking for existing email token.  Generating" +
+                " new email token");
+                res = true;
+            }
+
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
+
+    //Deletes old verification email token from the database
+    private boolean deleteEmailToken(String email){
+        logger.info("Deleting current token for user " + email);
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "delete from email_verification where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Deleted existing token");
+                res = true;
+            } else{
+                logger.error("No rows were found to be deleted for user " + email);
             }
         } catch(SQLException e){
             logConnectionError(e);

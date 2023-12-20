@@ -89,7 +89,7 @@ public class AuthService {
     }
 
     //Logs authentication attempt in db
-    public boolean logAuthAttempt(String email,  boolean valid){
+    public boolean logAuthAttempt(String email, boolean valid){
         AuthDAO dao = new AuthDAO();
         boolean userExists = lookupExistingUser(email); //Check if user exists
         boolean res = dao.logAuthAttempt(email, valid, userExists);
@@ -97,5 +97,12 @@ public class AuthService {
         return res;
 
 
+    }
+
+    //Generates an email verification token
+    public boolean generateEmailVerificationToken(String email){
+        AuthDAO dao = new AuthDAO();
+        boolean res = dao.generateEmailVerificationToken(email);
+        return res;
     }
 }
