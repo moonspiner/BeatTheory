@@ -16,16 +16,16 @@ import com.fw.listenup.models.Test;
 @RequestMapping("/api/v1/logging")
 public class LoggingController{
 
-    private final LoggingDAO dao;
+    // private final LoggingDAO dao;
 
-    @Autowired
-    public LoggingController(DataSource ds){
-        this.dao = new LoggingDAO(ds);
-    }
+    // @Autowired
+    // public LoggingController(DataSource ds){
+    //     this.dao = new LoggingDAO(ds);
+    // }
 
-    @GetMapping("/test")
-    public List<Test> test(){
+    // @GetMapping("/test")
+    // public List<Test> test(){
         
-        return dao.getAllTestEntities();
-    }
+    //     return dao.getAllTestEntities();
+    // }
 }

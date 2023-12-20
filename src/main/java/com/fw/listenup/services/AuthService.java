@@ -3,6 +3,7 @@ package com.fw.listenup.services;
 
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.fw.listenup.crypto.SHA256;
@@ -11,9 +12,12 @@ import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.util.CommonUtil;
 
+import ch.qos.logback.classic.Logger;
+
 //Service class responsible for handling auth logic and proxying controller and dao
 @Service
 public class AuthService {
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthService.class);
 
     //Retrieves authentication details for login attempt
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
@@ -32,17 +36,18 @@ public class AuthService {
             Map<String, String> credMap = dao.getExistingEmailAndUsername(email, username);
             if(credMap.containsKey("email")){
                 if(!credMap.get("email").equals("")){
+                    logger.error(email + " has been taken");
                     emailTaken = true;
-
                 }
             }
             if(credMap.containsKey("username")){
                 if(!credMap.get("username").equals("")){
+                    logger.error(username + " has been taken");
                     usernameTaken = true;
                 }
             }
         } catch(NullPointerException e){
-            System.out.println("The credential map returned empty: " + e.toString());
+            logger.error("The credential map returned empty: " + e.toString());
         }
 
         RegistrationLookupDetail rld = new RegistrationLookupDetail(emailTaken, usernameTaken);
@@ -57,7 +62,7 @@ public class AuthService {
         //Before registering, hash the password:
         String hashedPw = SHA256.hash(pw);
         if(CommonUtil.isEmpty(hashedPw)){
-            System.out.println("Hashing of password failed, returning false");
+            logger.error("Hashing of password failed, returning false");
             return false;
         }
         boolean isRegistered = dao.registerNewUser(email, username, hashedPw);

@@ -4,7 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+
 public class DAOBase {
+    protected final static Logger logger = (Logger) LoggerFactory.getLogger(DAOBase.class);
     protected final String url = "jdbc:mysql://localhost:3306/lusit";
     protected final String root = "root";
     protected final String db_pw = "3y9buy2PjDpKToVf9T~~";
@@ -14,8 +19,12 @@ public class DAOBase {
             Connection con = DriverManager.getConnection(url, root, db_pw);
             return con;
         } catch(SQLException e){
-            System.out.println("There was an error with opening the connection: " + e.toString());
+            logConnectionError(e);
             return null;
         }
+    }
+
+    protected void logConnectionError(SQLException e){
+        logger.error("Error with opening connection: " + e.toString());
     }
 }

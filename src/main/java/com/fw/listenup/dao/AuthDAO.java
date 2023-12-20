@@ -8,18 +8,23 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 
+import ch.qos.logback.classic.Logger;
+
 //DAO class that handles db transactions related to authentication
 @Repository
 public class AuthDAO extends DAOBase{
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthDAO.class);
 
     //Returns the username and password of a user based on email 
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
         UserAuthenticationDetail uad = null;
         try(Connection con = getConnection()){
+            logger.info("Calling db for user authentication details");
             PreparedStatement stmt = con.prepareStatement("select email, password from user where email = ?");
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
@@ -29,9 +34,11 @@ public class AuthDAO extends DAOBase{
                 String username = rs.getString("email");
                 String pw = rs.getString("password");
                 uad = new UserAuthenticationDetail(username, pw);
+            } else{
+                logger.error("No credential match found, invalid auth attempt");
             }
         } catch(SQLException e){
-            System.out.println("Error with opening connection: " + e.toString());
+            logConnectionError(e);
         }
 
         return uad;
@@ -43,6 +50,7 @@ public class AuthDAO extends DAOBase{
         String existingEmail = "";
         String existingUsername = "";
         try(Connection con = getConnection()){
+            logger.info("Calling db for credential lookup");
             PreparedStatement emailStmt = con.prepareStatement("select email from user where email = ?");
             emailStmt.setString(1, email);
             
@@ -59,9 +67,9 @@ public class AuthDAO extends DAOBase{
                 existingUsername = rs2.getString("username");
             }
 
-            System.out.println("Existing email and username: " + existingEmail + " : " + existingUsername);
+            logger.info("Existing email and username: " + existingEmail + " : " + existingUsername);
         } catch(SQLException e){
-            System.out.println("Error with opening connection " + e.toString());
+            logConnectionError(e);
         }
 
         credMap.put("email", existingEmail);
@@ -79,6 +87,7 @@ public class AuthDAO extends DAOBase{
         int status = 1;
 
         try(Connection con = getConnection()){
+            logger.info("Attempting to insert new user into db");
             String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status) " +
                                  "values (?,?,?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(insertQuery);
@@ -92,14 +101,14 @@ public class AuthDAO extends DAOBase{
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){
-                System.out.println("User was inserted");
+                logger.info("New user was successfully inserted!");
                 res = true;
             } else {
-                System.out.println("Something went wrong, no user was inserted");
+               logger.error("Something went wrong, no user was inserted");
             }
 
         } catch(SQLException e){
-            System.out.println("Error with executing insert for new user: " + e.toString());
+            logConnectionError(e);
         }
 
         return res;

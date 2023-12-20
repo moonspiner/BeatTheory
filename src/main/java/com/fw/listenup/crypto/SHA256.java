@@ -4,8 +4,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Logger;
+
 //Hash sensitive value that need to be stored in the db
 public class SHA256 {
+    private static final Logger logger = (Logger) LoggerFactory.getLogger(SHA256.class);
     public static String hash(String plaintext){
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -13,7 +18,7 @@ public class SHA256 {
             String hashedStr = bytesToHex(encodedHash);
             return hashedStr;
         } catch(NoSuchAlgorithmException e){
-            System.out.println("No algorithm found: " + e.toString());
+            logger.error("No algorithm found when hashing: " + e.toString());
             return null;
         }
 
