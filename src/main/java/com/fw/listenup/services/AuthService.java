@@ -55,6 +55,25 @@ public class AuthService {
         
     }
 
+    //Overloaded method for looking up exisiting user
+    private boolean lookupExistingUser(String email){
+        AuthDAO dao= new AuthDAO();
+
+        try{
+            Map<String, String> credMap = dao.getExistingEmailAndUsername(email, "");
+            if(credMap.containsKey("email")){
+                if(!credMap.get("email").equals("")){
+                    logger.info("User with email " + email + " exists in the database");
+                    return true;
+                }
+            }
+            
+        } catch(NullPointerException e){
+            logger.error("The credential map returned empty: " + e.toString());
+        }
+        return false;
+    }
+
     //Registers a new user
     public boolean registerNewUser(String email, String username, String pw){
         AuthDAO dao = new AuthDAO();
@@ -70,9 +89,10 @@ public class AuthService {
     }
 
     //Logs authentication attempt in db
-    public boolean logAuthAttempt(String email, String ip, boolean valid){
+    public boolean logAuthAttempt(String email,  boolean valid){
         AuthDAO dao = new AuthDAO();
-        boolean res = dao.logAuthAttempt(email, ip, valid);
+        boolean userExists = lookupExistingUser(email); //Check if user exists
+        boolean res = dao.logAuthAttempt(email, valid, userExists);
 
         return res;
 

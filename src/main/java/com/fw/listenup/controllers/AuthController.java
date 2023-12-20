@@ -91,20 +91,15 @@ public class AuthController {
     public Map<String, Boolean> logAuthAttempt(@RequestParam String email, @RequestParam boolean valid, HttpServletRequest request){
         //Retrieve source IP
         logger.info("Logging authentication attempt in db");
-        logger.info("Retrieving IP address of request");
-        String ip = "";
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if(xForwardedFor != null & !xForwardedFor.isEmpty()){
-            ip = xForwardedFor.split(",")[0].trim();
-        } else{
-            logger.error("IP address could not be retrieved");
-        }
 
         //Call to auth log service method
         Map<String, Boolean> res = new HashMap<String, Boolean>();
         String resKey = "isLogged";
         try{
-            this.authService.logAuthAttempt(email, ip, valid);
+            boolean isLogged = this.authService.logAuthAttempt(email, valid);
+            if(!isLogged) logger.error("Auth log attempt failed to be stored in db");
+            else logger.info("Auth attempt has been recorded");
+            res.put(resKey, isLogged);
         } catch(Exception e){
             logger.error("Auth log request server error: " + e.toString());
             res.put(resKey, false);
