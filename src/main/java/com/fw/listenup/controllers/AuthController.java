@@ -20,6 +20,7 @@ import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.services.AuthService;
 
 import ch.qos.logback.classic.Logger;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -79,6 +80,33 @@ public class AuthController {
             res.put(resKey, isRegistered);
         } catch(Exception e){
             logger.error("Registration request server error: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+
+    //Stores an auth attempt in db
+    @PostMapping("/auth/log")
+    public Map<String, Boolean> logAuthAttempt(@RequestParam String email, @RequestParam boolean valid, HttpServletRequest request){
+        //Retrieve source IP
+        logger.info("Logging authentication attempt in db");
+        logger.info("Retrieving IP address of request");
+        String ip = "";
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if(xForwardedFor != null & !xForwardedFor.isEmpty()){
+            ip = xForwardedFor.split(",")[0].trim();
+        } else{
+            logger.error("IP address could not be retrieved");
+        }
+
+        //Call to auth log service method
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "isLogged";
+        try{
+            this.authService.logAuthAttempt(email, ip, valid);
+        } catch(Exception e){
+            logger.error("Auth log request server error: " + e.toString());
             res.put(resKey, false);
         }
 

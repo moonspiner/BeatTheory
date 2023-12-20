@@ -68,4 +68,14 @@ public class AuthService {
         boolean isRegistered = dao.registerNewUser(email, username, hashedPw);
         return isRegistered;
     }
+
+    //Logs authentication attempt in db
+    public boolean logAuthAttempt(String email, String ip, boolean valid){
+        AuthDAO dao = new AuthDAO();
+        boolean res = dao.logAuthAttempt(email, ip, valid);
+
+        return res;
+
+
+    }
 }

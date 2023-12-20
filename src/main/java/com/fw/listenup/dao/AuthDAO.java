@@ -113,4 +113,33 @@ public class AuthDAO extends DAOBase{
 
         return res;
     }
+
+    //Makes insert statement into login_attempts table with new credentials
+    public boolean logAuthAttempt(String email, String ip, boolean valid){
+        boolean res = false;
+        //Predefined values
+        Timestamp logTime = new Timestamp(System.currentTimeMillis());
+
+        try(Connection con = getConnection()){
+            logger.info("Logging auth attempt in db");
+            String query = "insert into login_attempts (login_time, ip_address, email, valid_auth) values (?,?,?,?)";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setTimestamp(1, logTime);
+            stmt.setString(2, ip);
+            stmt.setString(3, email);
+            stmt.setBoolean(4, valid);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Auth attempt was successful logged");
+                res = true;
+            } else{
+                logger.error("Something went wrong, the auth attempt was not logged");
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return res;
+    }
 }
