@@ -1,0 +1,26 @@
+2173623 [restartedMain] INFO  c.fw.listenup.ListenupApplication - Starting ListenupApplication using Java 17.0.2 with PID 17820 (C:\code\java\ListenUpBE\listenup\target\classes started by xbbx in C:\code\java\ListenUpBE\listenup)
+2173623 [restartedMain] INFO  c.fw.listenup.ListenupApplication - No active profile set, falling back to 1 default profile: "default"
+2173716 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2173716 [restartedMain] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2173717 [restartedMain] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2173717 [restartedMain] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.16]
+2173725 [restartedMain] INFO  o.a.c.c.C.[.[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2173725 [restartedMain] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 101 ms
+2173766 [restartedMain] INFO  o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2173768 [restartedMain] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2173769 [restartedMain] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+2173771 [restartedMain] INFO  c.fw.listenup.ListenupApplication - Started ListenupApplication in 0.161 seconds (process running for 2173.855)
+2173772 [restartedMain] INFO  o.s.b.d.a.ConditionEvaluationDeltaLoggingListener - Condition evaluation unchanged
+2188465 [http-nio-8080-exec-1] INFO  o.a.c.c.C.[.[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2188466 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2188466 [http-nio-8080-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2188467 [http-nio-8080-exec-1] INFO  c.f.l.controllers.AuthController - Login request made for user ericb@gmail.com
+2188475 [http-nio-8080-exec-1] INFO  com.fw.listenup.dao.AuthDAO - Calling db for user authentication details
+2192829 [http-nio-8080-exec-2] INFO  c.f.l.controllers.AuthController - Login request made for user eric12b@gmail.com
+2192838 [http-nio-8080-exec-2] INFO  com.fw.listenup.dao.AuthDAO - Calling db for user authentication details
+2192840 [http-nio-8080-exec-2] ERROR com.fw.listenup.dao.AuthDAO - No credential match found, invalid auth attempt
+2192841 [http-nio-8080-exec-2] ERROR c.f.l.controllers.AuthController - Login request failed for user eric12b@gmail.com
+2201431 [http-nio-8080-exec-3] INFO  c.f.l.controllers.AuthController - Login request made for user ericb@gmail.com
+2201439 [http-nio-8080-exec-3] INFO  com.fw.listenup.dao.AuthDAO - Calling db for user authentication details
+2203737 [http-nio-8080-exec-4] INFO  c.f.l.controllers.AuthController - Login request made for user ericb@gmail.com
+2203746 [http-nio-8080-exec-4] INFO  com.fw.listenup.dao.AuthDAO - Calling db for user authentication details
