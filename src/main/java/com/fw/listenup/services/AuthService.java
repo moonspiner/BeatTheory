@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 
 import com.fw.listenup.crypto.SHA256;
 import com.fw.listenup.dao.AuthDAO;
+import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.util.CommonUtil;
+import com.fw.listenup.util.MailUtil;
 
 import ch.qos.logback.classic.Logger;
 
@@ -109,9 +111,48 @@ public class AuthService {
             logger.info("Token is generated, proceeding to send email");
             String uid = dao.getVerificationToken(email);
             if(!CommonUtil.isEmpty(uid)){
-                
+                res = true;
             }
         }
         return res;
+    }
+
+    //Sends verification email to a user if the email verification details return populated
+    public EmailVerificationDetail sendVerificationEmail(String email){
+        AuthDAO dao = new AuthDAO();
+        EmailVerificationDetail evd = dao.getEmailVerificationDetail(email);
+        if(evd != null){
+            MailUtil.sendEmail(evd);
+        }
+        return evd;
+    }
+
+    //Completes registration if uid matches and is within timerange
+    public EmailVerificationDetail completeRegistration(String uid){
+        AuthDAO dao = new AuthDAO();
+        EmailVerificationDetail evd = dao.getEmailToken(uid);
+        if(evd != null){
+            if(!uid.equals(evd.getUid())){
+                logger.error("The uids do not match");
+                return null;
+            } 
+            if(!CommonUtil.tokenIsValid(evd.getExpiresBy())){
+                logger.error("The timestamp has expired");
+                return null;
+            }
+
+            //Both potential error condition have passed, now we can update
+            //the user's verification status!
+            boolean verificationUpdated = verificationStatusUpdated(evd.getEmail());
+            if(!verificationUpdated) return null;
+        }
+
+        return evd;
+    }
+
+    //Updates the newly registered user's verification status
+    private boolean verificationStatusUpdated(String email){
+        AuthDAO dao = new AuthDAO();
+        return dao.updateUserVerificationStatus(email);
     }
 }

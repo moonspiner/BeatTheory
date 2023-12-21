@@ -3,6 +3,7 @@ package com.fw.listenup.controllers;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.catalina.connector.Response;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.services.AuthService;
@@ -24,7 +26,7 @@ import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1/auth/")
 @CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
     private final AuthService authService;
@@ -36,7 +38,7 @@ public class AuthController {
     }
 
     //Controller method, serves as API entry point for retrieiving user auth details from db
-    @GetMapping("/user/{email}")
+    @GetMapping("/user/getUser/{email}")
     public ResponseEntity<UserAuthenticationDetail> getUserAuthenticationDetails(@PathVariable String email){
         logger.info("Login request made for user " + email);
         UserAuthenticationDetail uad = this.authService.getUserAuthenticationDetail(email);
@@ -88,7 +90,7 @@ public class AuthController {
     }
 
     //Stores an auth attempt in db
-    @PostMapping("/auth/log")
+    @PostMapping("/log")
     public Map<String, Boolean> logAuthAttempt(@RequestParam String email, @RequestParam boolean valid, HttpServletRequest request){
         logger.info("Logging authentication attempt in db");
 
@@ -109,7 +111,7 @@ public class AuthController {
     }
  
     //Generate email verification entry
-    @PostMapping("/auth/user/token/generate")
+    @PostMapping("user/token/generate")
     public Map<String, Boolean> generateEmailVerificationToken(@RequestParam String email){
         logger.info("Generating verification token for user " + email);
         Map<String, Boolean> res = new HashMap<String, Boolean>();
@@ -127,10 +129,46 @@ public class AuthController {
         return res;
     }
 
-    @GetMapping("testers")
-    public String testEmail(){
-        MailUtil.sendEmail();
-        return "check email";
+    //Send verification email
+    @PostMapping("sendVerificationEmail")
+    public ResponseEntity<?> sendVerificationEmail(@RequestParam String email){
+        logger.info("Sending verification email to user " + email);
+
+        try{
+            EmailVerificationDetail evd = authService.sendVerificationEmail(email);
+            if(evd == null){
+                logger.error("Email verification details are empty for user " + email);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No email verification details were found");
+            }
+            return ResponseEntity.ok(evd);
+        }catch(Exception e){ 
+            logger.error("Error with sending verification email: " + e.toString());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No email verification details were found");
+        }
     }
+
+    @GetMapping("registerToken")
+    public String completeRegistration(@RequestParam("uid") String uid){
+        logger.info("Attempting to complete user registration");
+        try{
+            EmailVerificationDetail evd = this.authService.completeRegistration(uid);
+            if(evd == null){
+                logger.error("There was an error with verifying the user token in the link");
+                return "/error";
+            }
+            return "/login";
+        } catch(Exception e){
+            logger.error("Error with validation email registration token");
+            return "/error";
+        }
+
+
+    }
+
+    // @GetMapping("testers")
+    // public String testEmail(){
+    //     MailUtil.sendEmail("foolishwizard25@protonmail.com");
+    //     return "check email";
+    // }
     
 }

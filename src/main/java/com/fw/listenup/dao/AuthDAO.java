@@ -13,7 +13,9 @@ import java.util.UUID;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
+import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
+import com.fw.listenup.util.CommonUtil;
 
 import ch.qos.logback.classic.Logger;
 
@@ -258,6 +260,94 @@ public class AuthDAO extends DAOBase{
         } catch(SQLException e){
             logConnectionError(e);
         }
+        return res;
+    }
+
+    //Gets the email verification details to be sent to the registration template
+    public EmailVerificationDetail getEmailVerificationDetail(String email){
+        logger.info("Retrieving email verification details for user " + email);
+        EmailVerificationDetail evd = null;
+
+        try(Connection con = getConnection()){
+            String query = "select user.username, user.email, email_verification.uid from user inner join " + 
+                            "email_verification on user.email = email_verification.email where user.email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                String username = rs.getString("username");
+                String email2 = rs.getString("email");
+                String uid = rs.getString("uid");
+
+                //Make sure no fields are null
+                if(CommonUtil.isEmpty(username) ||  CommonUtil.isEmpty(email2) || CommonUtil.isEmpty(uid)){
+                    logger.error("One of the email verification details fields is null");
+                    return evd;
+                }
+
+                evd = new EmailVerificationDetail(email2, username, uid);
+            }
+            
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        logger.info("Returning email verification details to service layer");
+        return evd;
+    }
+
+    //Lookups email verification detail with uid and returns the email, uid, and timestamp
+    public EmailVerificationDetail getEmailToken(String uid){
+        logger.info("Getting email token from verification link");
+        EmailVerificationDetail evd = null;
+
+        try(Connection con = getConnection()){
+            String query = "select user.email, email_verification.uid, email_verification.expires_by from user inner join " + 
+                            "email_verification on user.email = email_verification.email where email_verification.uid = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, uid);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                String email = rs.getString("email");
+                String uid2 = rs.getString("uid");
+                Timestamp expiresBy = rs.getTimestamp("expires_by");
+
+                //Make sure no fields are null
+                if(CommonUtil.isEmpty(email) ||  CommonUtil.isEmpty(uid2) || expiresBy == null){
+                    logger.error("One of the email verification details fields is null");
+                    return evd;
+                }
+
+                evd = new EmailVerificationDetail(email, uid2, expiresBy);
+            }
+            
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        logger.info("Returning email verification details to service layer");
+        return evd;
+    }
+
+    //Update user verification status
+    public boolean updateUserVerificationStatus(String email){
+        logger.info("Updating verification status for user " + email);
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "update user set verification_status = 1 where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Successfully updated user's verification status");
+                res = true;
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
         return res;
     }
 }
