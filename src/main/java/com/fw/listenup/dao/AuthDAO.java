@@ -238,4 +238,26 @@ public class AuthDAO extends DAOBase{
 
         return res;
     }
+
+    public String getVerificationToken(String email){
+        logger.info("Retrieving token for user " + email);
+        String res = "";
+
+        try(Connection con = getConnection()){
+            String query = "select uid from email_verification where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                res = rs.getString("uid");
+            } else{
+                logger.error("No uid found for user " + email);
+            }
+
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
 }

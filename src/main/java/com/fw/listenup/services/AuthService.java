@@ -101,8 +101,17 @@ public class AuthService {
 
     //Generates an email verification token
     public boolean generateEmailVerificationToken(String email){
+        boolean res = false; 
+
         AuthDAO dao = new AuthDAO();
-        boolean res = dao.generateEmailVerificationToken(email);
+        boolean tokenGenerated = dao.generateEmailVerificationToken(email);
+        if(tokenGenerated){
+            logger.info("Token is generated, proceeding to send email");
+            String uid = dao.getVerificationToken(email);
+            if(!CommonUtil.isEmpty(uid)){
+                
+            }
+        }
         return res;
     }
 }

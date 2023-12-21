@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.services.AuthService;
+import com.fw.listenup.util.MailUtil;
 
 import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpServletRequest;
@@ -108,7 +109,7 @@ public class AuthController {
     }
  
     //Generate email verification entry
-    @PostMapping("/auth/user/token")
+    @PostMapping("/auth/user/token/generate")
     public Map<String, Boolean> generateEmailVerificationToken(@RequestParam String email){
         logger.info("Generating verification token for user " + email);
         Map<String, Boolean> res = new HashMap<String, Boolean>();
@@ -126,5 +127,10 @@ public class AuthController {
         return res;
     }
 
+    @GetMapping("testers")
+    public String testEmail(){
+        MailUtil.sendEmail();
+        return "check email";
+    }
     
 }
