@@ -131,20 +131,25 @@ public class AuthController {
 
     //Send verification email
     @PostMapping("sendVerificationEmail")
-    public ResponseEntity<?> sendVerificationEmail(@RequestParam String email){
+    public Map<String, Boolean> sendVerificationEmail(@RequestParam String email){
         logger.info("Sending verification email to user " + email);
-
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "emailSent";
         try{
             EmailVerificationDetail evd = authService.sendVerificationEmail(email);
-            if(evd == null){
+            if(evd == null) {
                 logger.error("Email verification details are empty for user " + email);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No email verification details were found");
+                res.put(resKey, false);
+            } else {
+                logger.info("Email verification has been sent");
+                res.put(resKey, true);
             }
-            return ResponseEntity.ok(evd);
         }catch(Exception e){ 
             logger.error("Error with sending verification email: " + e.toString());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("No email verification details were found");
+            res.put(resKey, false);
         }
+
+        return res;
     }
 
     @GetMapping("registerToken")
@@ -154,12 +159,12 @@ public class AuthController {
             EmailVerificationDetail evd = this.authService.completeRegistration(uid);
             if(evd == null){
                 logger.error("There was an error with verifying the user token in the link");
-                return "/error";
+                return "redirect:http://localhost:4200/login";
             }
-            return "/login";
+            return "redirect:http://localhost:4200/";
         } catch(Exception e){
             logger.error("Error with validation email registration token");
-            return "/error";
+            return "redirect:http://localhost:4200/login";
         }
 
 
