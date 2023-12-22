@@ -155,4 +155,10 @@ public class AuthService {
         AuthDAO dao = new AuthDAO();
         return dao.updateUserVerificationStatus(email);
     }
+
+    //Checks user verification status
+    public boolean checkUserVerificationStatus(String email){
+        AuthDAO dao = new AuthDAO();
+        return dao.checkUserVerificationStatus(email);
+    }
 }

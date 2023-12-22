@@ -1,9 +1,9 @@
 package com.fw.listenup.controllers;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.catalina.connector.Response;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,10 +20,10 @@ import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.services.AuthService;
-import com.fw.listenup.util.MailUtil;
 
 import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/auth/")
@@ -38,7 +38,7 @@ public class AuthController {
     }
 
     //Controller method, serves as API entry point for retrieiving user auth details from db
-    @GetMapping("/user/getUser/{email}")
+    @GetMapping("user/{email}")
     public ResponseEntity<UserAuthenticationDetail> getUserAuthenticationDetails(@PathVariable String email){
         logger.info("Login request made for user " + email);
         UserAuthenticationDetail uad = this.authService.getUserAuthenticationDetail(email);
@@ -52,7 +52,7 @@ public class AuthController {
     }
 
     //Takes submitted registration form arguments and checks that username/email are not taken
-    @PostMapping("/register/isTaken")
+    @PostMapping("register/isTaken")
     public ResponseEntity<?> lookupExistingUser(@RequestParam String email, @RequestParam String username){
         logger.info("Registration lookup request made for user " + email + " : " + username);
         try{
@@ -71,7 +71,7 @@ public class AuthController {
     }
 
     //Registers new user
-    @PostMapping("/register")
+    @PostMapping("register")
     public Map<String, Boolean> registerNewUser(@RequestParam String email, @RequestParam String username, @RequestParam String pw){
         logger.info("Registration request made for new user " + email);
         //Map result that returns whether user was properly registered
@@ -90,7 +90,7 @@ public class AuthController {
     }
 
     //Stores an auth attempt in db
-    @PostMapping("/log")
+    @PostMapping("log")
     public Map<String, Boolean> logAuthAttempt(@RequestParam String email, @RequestParam boolean valid, HttpServletRequest request){
         logger.info("Logging authentication attempt in db");
 
@@ -111,7 +111,7 @@ public class AuthController {
     }
  
     //Generate email verification entry
-    @PostMapping("user/token/generate")
+    @PostMapping("generateToken")
     public Map<String, Boolean> generateEmailVerificationToken(@RequestParam String email){
         logger.info("Generating verification token for user " + email);
         Map<String, Boolean> res = new HashMap<String, Boolean>();
@@ -152,28 +152,45 @@ public class AuthController {
         return res;
     }
 
+    //Registers user when they navigate to email link
     @GetMapping("registerToken")
-    public String completeRegistration(@RequestParam("uid") String uid){
+    public void completeRegistration(@RequestParam("uid") String uid, HttpServletResponse response){
         logger.info("Attempting to complete user registration");
         try{
             EmailVerificationDetail evd = this.authService.completeRegistration(uid);
             if(evd == null){
                 logger.error("There was an error with verifying the user token in the link");
-                return "redirect:http://localhost:4200/login";
+                response.sendRedirect("http://localhost:4200/login");
             }
-            return "redirect:http://localhost:4200/";
+            response.sendRedirect("http://localhost:4200/");
         } catch(Exception e){
             logger.error("Error with validation email registration token");
-            return "redirect:http://localhost:4200/login";
+            try {
+                response.sendRedirect("http://localhost:4200/login");
+            } catch (IOException ioe) {
+                logger.error(ioe.toString());
+            }
         }
 
 
     }
 
-    // @GetMapping("testers")
-    // public String testEmail(){
-    //     MailUtil.sendEmail("foolishwizard25@protonmail.com");
-    //     return "check email";
-    // }
+    //Checks user verification status
+    @GetMapping("user/{email}/checkUserVerification")
+    public Map<String, Boolean> checkUserVerificationStatus(@PathVariable String email){
+        logger.info("Retrieving verification status for user " + email);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "status";
+        try{
+            boolean status = this.authService.checkUserVerificationStatus(email);
+            if(!status) logger.info("User is not verified");
+            res.put(resKey, status);
+        } catch(Exception e){
+            logger.error("Error with retrieving user verification status");
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
     
 }

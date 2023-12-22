@@ -89,11 +89,12 @@ public class AuthDAO extends DAOBase{
         int rankId = 1;
         Timestamp createdAt = new Timestamp(System.currentTimeMillis());
         int status = 1;
+        int verificationStatus = 0;
 
         try(Connection con = getConnection()){
             logger.info("Attempting to insert new user into db");
-            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status) " +
-                                 "values (?,?,?,?,?,?,?)";
+            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status) " +
+                                 "values (?,?,?,?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(insertQuery);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -102,6 +103,7 @@ public class AuthDAO extends DAOBase{
             stmt.setInt(5, rankId);
             stmt.setTimestamp(6, createdAt);
             stmt.setInt(7, status);
+            stmt.setInt(8, verificationStatus);
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){
@@ -343,6 +345,30 @@ public class AuthDAO extends DAOBase{
             if(rowsAffected > 0){
                 logger.info("Successfully updated user's verification status");
                 res = true;
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return res;
+    }
+
+    //Looks up user verification status and returns result
+    public boolean checkUserVerificationStatus(String email){
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "select verification_status from user where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                int statusInt = rs.getInt("verification_status");
+                boolean status = statusInt == 1 ? true: false;
+                return status;
+            } else{
+                logger.error("No results were found, returning false");
             }
         } catch(SQLException e){
             logConnectionError(e);
