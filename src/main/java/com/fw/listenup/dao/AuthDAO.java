@@ -151,7 +151,7 @@ public class AuthDAO extends DAOBase{
     }
 
     //Generates a new email token to be used for verification
-    public boolean generateEmailVerificationToken(String email) {
+    public boolean generateEmailVerificationToken(String email) throws SQLException {
         boolean res = false;
 
         //Predefined values
@@ -164,6 +164,7 @@ public class AuthDAO extends DAOBase{
         //Check for pre-existing token.  If one exists, delete it and recall method
         if(emailTokenExists(email)){
             boolean deleted = deleteEmailToken(email);
+            if(!deleted) throw new SQLException("Token exists, but deletion failed");
             // if(deleted) generateEmailVerificationToken(email);
         }
 

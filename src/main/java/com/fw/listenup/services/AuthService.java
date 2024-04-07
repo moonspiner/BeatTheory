@@ -1,6 +1,7 @@
 package com.fw.listenup.services;
 
 
+import java.sql.SQLException;
 import java.util.Map;
 
 import org.slf4j.LoggerFactory;
@@ -106,14 +107,19 @@ public class AuthService {
         boolean res = false; 
 
         AuthDAO dao = new AuthDAO();
-        boolean tokenGenerated = dao.generateEmailVerificationToken(email);
-        if(tokenGenerated){
-            logger.info("Token is generated, proceeding to send email");
-            String uid = dao.getVerificationToken(email);
-            if(!CommonUtil.isEmpty(uid)){
-                res = true;
+        try{
+            boolean tokenGenerated = dao.generateEmailVerificationToken(email);
+            if(tokenGenerated){
+                logger.info("Token is generated, proceeding to send email");
+                String uid = dao.getVerificationToken(email);
+                if(!CommonUtil.isEmpty(uid)){
+                    res = true;
+                }
             }
+        } catch(SQLException e){
+            logger.error(e.toString());
         }
+        
         return res;
     }
 
