@@ -5,17 +5,17 @@ import java.sql.Date;
 //POJO class for encapsulating leaderboard details
 public class LeaderboardRecord {
     private int gameId;
-    private int userId;
+    private String username;
     private int totalCorrect;
     private int totalAttempted;
     private String accuracy;
     private Date timestamp;
     private int rank;
 
-    public LeaderboardRecord(int gameId, int userId, int totalCorrect, int totalAttempted,
+    public LeaderboardRecord(int gameId, String username, int totalCorrect, int totalAttempted,
                             String accuracy, Date timestamp){
         this.gameId = gameId;
-        this.userId = userId;
+        this.username = username;
         this.totalCorrect = totalCorrect;
         this.totalAttempted = totalAttempted;
         this.accuracy = accuracy;
@@ -32,12 +32,12 @@ public class LeaderboardRecord {
         this.gameId = gameId;
     }
 
-    public int getUserId() {
-        return this.userId;
+    public String getUsername() {
+        return this.username;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public int getTotalCorrect() {
@@ -85,7 +85,7 @@ public class LeaderboardRecord {
     public String toString() {
         return "{" +
             " gameId='" + getGameId() + "'" +
-            ", userId='" + getUserId() + "'" +
+            ", username='" + getUsername() + "'" +
             ", totalCorrect='" + getTotalCorrect() + "'" +
             ", totalAttempted='" + getTotalAttempted() + "'" +
             ", accuracy='" + getAccuracy() + "'" +
