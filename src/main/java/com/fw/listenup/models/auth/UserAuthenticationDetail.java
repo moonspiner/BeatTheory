@@ -5,13 +5,11 @@ public class UserAuthenticationDetail {
     private String email;
     private String password;
     private String salt;
-    private String token;
 
-    public UserAuthenticationDetail(String mEmail, String mPassword, String mSalt, String mToken){
+    public UserAuthenticationDetail(String mEmail, String mPassword, String mSalt){
         this.email = mEmail;
         this.password = mPassword;
         this.salt = mSalt;
-        this.token = mToken;
     }
 
     public String getEmail() {
@@ -38,12 +36,5 @@ public class UserAuthenticationDetail {
         this.salt = salt;
     }
 
-    public String getToken(){
-        return this.token;
-    }
-
-    public void setToken(String token){
-        this.token = token;
-    }
 
 }

@@ -20,6 +20,7 @@ import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.services.AuthService;
+import com.fw.listenup.util.CommonUtil;
 
 import ch.qos.logback.classic.Logger;
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,7 +45,7 @@ public class AuthController {
         UserAuthenticationDetail uad = this.authService.getUserAuthenticationDetail(email);
         if(uad == null){
             logger.error("Login request failed for user " + email);
-            return ResponseEntity.ok(new UserAuthenticationDetail("", "", "", ""));
+            return ResponseEntity.ok(new UserAuthenticationDetail("", "", ""));
         } 
         
         // logger.info("NOT NULL");
@@ -177,17 +178,17 @@ public class AuthController {
 
     //Checks user verification status
     @GetMapping("user/{email}/checkUserVerification")
-    public Map<String, Boolean> checkUserVerificationStatus(@PathVariable String email){
+    public Map<String, String> checkUserVerificationStatus(@PathVariable String email){
         logger.info("Retrieving verification status for user " + email);
-        Map<String, Boolean> res = new HashMap<String, Boolean>();
-        String resKey = "status";
+        Map<String, String> res = new HashMap<String, String>();
+        String resKey = "token";
         try{
-            boolean status = this.authService.checkUserVerificationStatus(email);
-            if(!status) logger.info("User is not verified");
-            res.put(resKey, status);
+            String token = this.authService.checkUserVerificationStatus(email);
+            if(CommonUtil.isEmpty(token)) logger.info("User is not verified");
+            res.put(resKey, token);
         } catch(Exception e){
             logger.error("Error with retrieving user verification status");
-            res.put(resKey, false);
+            res.put(resKey, "");
         }
 
         return res;

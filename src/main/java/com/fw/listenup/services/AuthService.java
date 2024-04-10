@@ -197,7 +197,7 @@ public class AuthService {
     }
 
     //Checks user verification status
-    public boolean checkUserVerificationStatus(String email){
+    public String checkUserVerificationStatus(String email){
         AuthDAO dao = new AuthDAO();
         return dao.checkUserVerificationStatus(email);
     }

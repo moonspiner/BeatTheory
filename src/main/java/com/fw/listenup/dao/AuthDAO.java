@@ -40,11 +40,7 @@ public class AuthDAO extends DAOBase{
                 String pw = rs.getString("password");
                 String salt = rs.getString("salt");
 
-                //Ensure that the data elements exists up to this point; otherwise, terminate
-                if(!CommonUtil.isEmpty(username) && !CommonUtil.isEmpty(pw) && !CommonUtil.isEmpty(salt)){
-                    String token = JwtUtil.generateToken(username, 3600000);
-                    uad = new UserAuthenticationDetail(username, pw, salt, token);
-                }
+                uad = new UserAuthenticationDetail(username, pw, salt);
             } else{
                 logger.error("No credential match found, invalid auth attempt");
             }
@@ -363,8 +359,8 @@ public class AuthDAO extends DAOBase{
     }
 
     //Looks up user verification status and returns result
-    public boolean checkUserVerificationStatus(String email){
-        boolean res = false;
+    public String checkUserVerificationStatus(String email){
+        String res = "";
 
         try(Connection con = getConnection()){
             String query = "select verification_status from user where email = ?";
@@ -373,9 +369,12 @@ public class AuthDAO extends DAOBase{
 
             ResultSet rs = stmt.executeQuery();
             if(rs.next()){
-                int statusInt = rs.getInt("verification_status");
-                boolean status = statusInt == 1 ? true: false;
-                return status;
+                int status = rs.getInt("verification_status");
+
+                //Confirms that the user has verified their email address
+                if(status == 1){
+                    return JwtUtil.generateToken(email, 3600000);
+                }
             } else{
                 logger.error("No results were found, returning false");
             }
