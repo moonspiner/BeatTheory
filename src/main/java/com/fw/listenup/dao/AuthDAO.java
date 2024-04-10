@@ -16,6 +16,7 @@ import org.springframework.stereotype.Repository;
 import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.util.CommonUtil;
+import com.fw.listenup.util.JwtUtil;
 
 import ch.qos.logback.classic.Logger;
 
@@ -38,7 +39,12 @@ public class AuthDAO extends DAOBase{
                 String username = rs.getString("email");
                 String pw = rs.getString("password");
                 String salt = rs.getString("salt");
-                uad = new UserAuthenticationDetail(username, pw, salt);
+
+                //Ensure that the data elements exists up to this point; otherwise, terminate
+                if(!CommonUtil.isEmpty(username) && !CommonUtil.isEmpty(pw) && !CommonUtil.isEmpty(salt)){
+                    String token = JwtUtil.generateToken(username, 3600000);
+                    uad = new UserAuthenticationDetail(username, pw, salt, token);
+                }
             } else{
                 logger.error("No credential match found, invalid auth attempt");
             }

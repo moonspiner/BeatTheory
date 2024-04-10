@@ -44,7 +44,7 @@ public class AuthController {
         UserAuthenticationDetail uad = this.authService.getUserAuthenticationDetail(email);
         if(uad == null){
             logger.error("Login request failed for user " + email);
-            return ResponseEntity.ok(new UserAuthenticationDetail("", "", ""));
+            return ResponseEntity.ok(new UserAuthenticationDetail("", "", "", ""));
         } 
         
         // logger.info("NOT NULL");
