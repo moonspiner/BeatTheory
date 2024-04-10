@@ -1,6 +1,9 @@
 package com.fw.listenup.services;
 
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -80,15 +83,46 @@ public class AuthService {
     //Registers a new user
     public boolean registerNewUser(String email, String username, String pw){
         AuthDAO dao = new AuthDAO();
+        boolean isRegistered = false;
+        
+        //Before registering, hash the password
+        try{
+            byte[] salt = generateSalt();
+            String saltString = bytesToHex(salt);
+            String saltedPw = pw + saltString;
+            System.out.println("Password before hashing: " + saltedPw);
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(saltedPw.getBytes());
+            String hashedPw = bytesToHex(hashedBytes);
+            if(CommonUtil.isEmpty(hashedPw)){
+                logger.error("Hashing of password failed, returning false");
+            }
+            System.out.println("Password after hashing: " + hashedPw);
+            isRegistered = dao.registerNewUser(email, username, hashedPw, saltString);
 
-        //Before registering, hash the password:
-        String hashedPw = SHA256.hash(pw);
-        if(CommonUtil.isEmpty(hashedPw)){
-            logger.error("Hashing of password failed, returning false");
-            return false;
+        } catch(NoSuchAlgorithmException e){
+            logger.error("No hashing algorithm was found: " + e.toString());
         }
-        boolean isRegistered = dao.registerNewUser(email, username, hashedPw);
+
         return isRegistered;
+        
+    }
+
+    //Generate random salt for the hashed pw
+    private byte[] generateSalt(){
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16];
+        random.nextBytes(salt);
+        return salt;
+    }
+
+     // Function to convert byte array to hexadecimal string
+     private static String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     //Logs authentication attempt in db

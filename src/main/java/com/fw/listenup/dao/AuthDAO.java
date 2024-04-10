@@ -29,7 +29,7 @@ public class AuthDAO extends DAOBase{
         UserAuthenticationDetail uad = null;
         try(Connection con = getConnection()){
             logger.info("Calling db for user authentication details");
-            PreparedStatement stmt = con.prepareStatement("select email, password from user where email = ?");
+            PreparedStatement stmt = con.prepareStatement("select email, password, salt from user where email = ?");
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
 
@@ -37,7 +37,8 @@ public class AuthDAO extends DAOBase{
             if(rs.next()){
                 String username = rs.getString("email");
                 String pw = rs.getString("password");
-                uad = new UserAuthenticationDetail(username, pw);
+                String salt = rs.getString("salt");
+                uad = new UserAuthenticationDetail(username, pw, salt);
             } else{
                 logger.error("No credential match found, invalid auth attempt");
             }
@@ -82,7 +83,7 @@ public class AuthDAO extends DAOBase{
     }
 
     //Makes insert statement into user table with new credentials
-    public boolean registerNewUser(String email, String username, String password){
+    public boolean registerNewUser(String email, String username, String password, String salt){
         //Predefined fields for new accounts
         boolean res = false;
         int role = 0;
@@ -93,8 +94,8 @@ public class AuthDAO extends DAOBase{
 
         try(Connection con = getConnection()){
             logger.info("Attempting to insert new user into db");
-            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status) " +
-                                 "values (?,?,?,?,?,?,?,?)";
+            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status, salt) " +
+                                 "values (?,?,?,?,?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(insertQuery);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -104,6 +105,7 @@ public class AuthDAO extends DAOBase{
             stmt.setTimestamp(6, createdAt);
             stmt.setInt(7, status);
             stmt.setInt(8, verificationStatus);
+            stmt.setString(9, salt);
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){
