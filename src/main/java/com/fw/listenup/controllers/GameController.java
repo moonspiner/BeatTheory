@@ -54,8 +54,8 @@ public class GameController {
     public Map<String, Boolean> setScore(@RequestParam int gameId, @RequestParam int userId, @RequestParam int totalCorrect,
                                       @RequestParam int totalAttempted, @RequestParam String accuracy, @RequestParam Date timestamp){
         Map<String, Boolean> res = new HashMap<String, Boolean>();
-        System.out.println(gameId + " : " + userId + " : " + timestamp);
-        res.put("scoreSet", true);
+        boolean val = this.gameService.setScore(gameId, userId, totalCorrect, totalAttempted, accuracy, timestamp);
+        res.put("scoreSet", val);
         return res;
     }
 }

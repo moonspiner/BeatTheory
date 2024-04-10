@@ -65,7 +65,9 @@ public class GameDAO extends DAOBase{
             stmt.setInt(4, totalAttempted);
             stmt.setString(5, accuracy);
             stmt.setDate(6, timestamp);
-            res = stmt.execute();
+            stmt.execute();
+            
+            res = true;
         } catch(SQLException e){
             logConnectionError(e);
         }
