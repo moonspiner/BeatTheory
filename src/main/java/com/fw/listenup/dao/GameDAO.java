@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -47,5 +48,27 @@ public class GameDAO extends DAOBase{
         }
 
         return scores;
+    }
+
+    //Sets a new record in the scores table
+    public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, Date timestamp){
+        boolean res = false;
+        try(Connection con = getConnection()){
+            logger.info("Setting new score record");
+            String query = "insert into scores (game_id, user_id, total_correct, total_attempted, accuracy, time_submitted) " + 
+            "values (?,?,?,?,?,?)";
+
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setInt(1, gameId);
+            stmt.setInt(2, userId);
+            stmt.setInt(3, totalCorrect);
+            stmt.setInt(4, totalAttempted);
+            stmt.setString(5, accuracy);
+            stmt.setDate(6, timestamp);
+            res = stmt.execute();
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
     }
 }
