@@ -50,6 +50,49 @@ public class GameDAO extends DAOBase{
         return scores;
     }
 
+    //Returns all of the best records for a specific user
+    public ArrayList<LeaderboardRecord> getUserLeaderboardRecords(String username) {
+        ArrayList<LeaderboardRecord> scores = new ArrayList<LeaderboardRecord>();
+        try(Connection con = getConnection()){
+            logger.info("Calling db for score details");
+            String query = "SELECT s.game_id, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
+                "FROM ( " +
+                    "SELECT scores.game_id, MAX(scores.total_correct) AS max_total_correct " +
+                    "FROM scores " +
+                    "INNER JOIN user ON scores.user_id = user.id " +
+                    "WHERE username = ? " +
+                    "GROUP BY scores.game_id " +
+                ") AS max_scores " +
+                "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_total_correct = s.total_correct";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            int count = 0;
+            while(rs.next()){
+                count++;
+                int gameId = rs.getInt("game_id");
+                int totalCorrect = rs.getInt("total_correct");
+                int totalAttempted = rs.getInt("total_attempted");
+                String accuracy = rs.getString("accuracy");
+                Date timestamp = rs.getDate("time_submitted");
+
+                LeaderboardRecord record = new LeaderboardRecord(gameId, username, totalCorrect, totalAttempted, accuracy, timestamp);
+                scores.add(record);
+            }
+
+            if(count < 1){
+                logger.error("NO VALUES RETURNED");
+            }
+
+            
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return scores;
+    }
+
     //Sets a new record in the scores table
     public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, Date timestamp){
         boolean res = false;
@@ -73,4 +116,6 @@ public class GameDAO extends DAOBase{
         }
         return res;
     }
+
+    
 }

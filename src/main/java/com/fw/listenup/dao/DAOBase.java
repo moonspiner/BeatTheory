@@ -12,7 +12,7 @@ public class DAOBase {
     protected final static Logger logger = (Logger) LoggerFactory.getLogger(DAOBase.class);
     protected final String url = "jdbc:mysql://localhost:3306/lusit";
     protected final String root = "root";
-    protected final String db_pw = "3y9buy2PjDpKToVf9T~~";
+    protected final String db_pw = "istyv123";
 
     protected Connection getConnection(){
         try{

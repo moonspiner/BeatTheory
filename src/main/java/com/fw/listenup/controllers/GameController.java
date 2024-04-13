@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,6 +50,20 @@ public class GameController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(scores);
     }
 
+    //Returns the records of all the scores for a specific user
+    @GetMapping("scores/{username}")
+    public ResponseEntity<ArrayList<LeaderboardRecord>> getUserScores(@PathVariable String username){
+        logger.info("Retrieving records for user " + username);
+        ArrayList<LeaderboardRecord> scores = this.gameService.getUserLeaderboardRecords(username);
+        if(scores.size() > 0){
+            logger.info("Score successfully retrieved");
+            return ResponseEntity.ok(scores);
+        }
+        
+        //The array list is empty, so return an error
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(scores);
+    }
+
     //Sets a new record into the score table
     @PostMapping("scores/setScore")
     public Map<String, Boolean> setScore(@RequestParam int gameId, @RequestParam int userId, @RequestParam int totalCorrect,
@@ -58,4 +73,6 @@ public class GameController {
         res.put("scoreSet", val);
         return res;
     }
+
+
 }
