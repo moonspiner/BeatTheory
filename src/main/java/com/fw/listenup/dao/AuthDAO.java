@@ -30,18 +30,19 @@ public class AuthDAO extends DAOBase{
         UserAuthenticationDetail uad = null;
         try(Connection con = getConnection()){
             logger.info("Calling db for user authentication details");
-            PreparedStatement stmt = con.prepareStatement("select id, email, password, salt from user where email = ?");
+            PreparedStatement stmt = con.prepareStatement("select id, username, email, password, salt from user where email = ?");
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
 
             //Should only return one value since email is a unique field
             if(rs.next()){
                 int userId = rs.getInt("id");
-                String username = rs.getString("email");
+                email = rs.getString("email");
+                String username = rs.getString("username");
                 String pw = rs.getString("password");
                 String salt = rs.getString("salt");
 
-                uad = new UserAuthenticationDetail(userId, username, pw, salt);
+                uad = new UserAuthenticationDetail(userId, email, username, pw, salt);
             } else{
                 logger.error("No credential match found, invalid auth attempt");
             }

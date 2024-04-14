@@ -4,12 +4,14 @@ package com.fw.listenup.models.auth;
 public class UserAuthenticationDetail {
     private int userId;
     private String email;
+    private String username;
     private String password;
     private String salt;
 
-    public UserAuthenticationDetail(int mUserId, String mEmail, String mPassword, String mSalt){
+    public UserAuthenticationDetail(int mUserId, String mEmail, String mUsername, String mPassword, String mSalt){
         this.userId = mUserId;
         this.email = mEmail;
+        this.username = mUsername;
         this.password = mPassword;
         this.salt = mSalt;
     }
@@ -28,6 +30,14 @@ public class UserAuthenticationDetail {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername(){
+        return this.username;
+    }
+
+    public void setUsername(String username){
+        this.username = username;
     }
 
     public String getPassword() {
