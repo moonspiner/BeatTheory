@@ -2,6 +2,7 @@ package com.fw.listenup.services;
 
 import ch.qos.logback.classic.Logger;
 
+import java.sql.Blob;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 
@@ -33,5 +34,17 @@ public class UserService {
             logger.error("Returning empty user joined date");
             return "";
         }
+    }
+
+    //Service call for getting the profile image of a user
+    public Blob getUserProfilePicture(String username){
+        Blob profilePic = dao.getUserProfilePicture(username);
+        return profilePic;
+    }
+
+    //Service call for setting a new profile picture for the user
+    public boolean setUserProfilePicture(Blob newPic, String username){
+        boolean picIsSet = dao.setUserProfilePicture(newPic, username);
+        return picIsSet;
     }
 }
