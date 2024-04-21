@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
@@ -46,25 +47,47 @@ public class UserDAO extends DAOBase{
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
+            logger.info("result set has been created");
 
             if(rs.next()){
                 Blob res = rs.getBlob("profile_picture");
+                logger.info("RES IS " + res.toString());
                 return res;
             }
 
         } catch(SQLException e){
             logConnectionError(e);
         }
-        logger.error("No date joined found for user " + username);
+        logger.error("No profile picture found for user " + username);
         return null;
     }
 
+    // private byte[] toByteArray(ByteArrayInputStream stream) {
+    //     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    //     int nRead;
+    //     byte[] data = new byte[16384]; // You can adjust buffer size as needed
+
+    //     try {
+    //         while ((nRead = stream.read(data, 0, data.length)) != -1) {
+    //             buffer.write(data, 0, nRead);
+    //         }
+    //         buffer.flush();
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     }
+
+    //     return buffer.toByteArray();
+    //}
+
     //Sets a new profile picture for the specified user
-    public boolean setUserProfilePicture(Blob newPic, String username){
+    public boolean setUserProfilePicture(byte[] img, String username){
         try(Connection con = getConnection()){
+            logger.info("STRING VALUE IS " + img);
             String query = "update user set profile_picture = ? where username = ?";
             PreparedStatement stmt = con.prepareStatement(query);
-            stmt.setBlob(1, newPic);
+            //Convert the string to a blob
+            
+            stmt.setBytes(1, img);
             stmt.setString(2, username);
 
             int rowsAffected = stmt.executeUpdate();

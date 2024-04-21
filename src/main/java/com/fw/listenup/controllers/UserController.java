@@ -1,16 +1,20 @@
 package com.fw.listenup.controllers;
 
+import java.io.IOException;
 import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fw.listenup.services.UserService;
@@ -38,18 +42,30 @@ public class UserController {
         Map<String, Object> res = new HashMap<String, Object>();
         String userJoinedDate = this.userService.getUserJoinedDate(username);
         Blob profilePic = this.userService.getUserProfilePicture(username);
+
         if (!CommonUtil.isEmpty(userJoinedDate)) logger.info("User joined date successfully retrieved");
-        
         res.put("joinedDate", userJoinedDate);
-        res.put("profilePicture", profilePic);
+
+        if(profilePic != null){
+            try {
+                byte[] profilePicBytes = StreamUtils.copyToByteArray(profilePic.getBinaryStream());
+                res.put("profilePicture", profilePicBytes);
+            } catch (SQLException | IOException e) {
+                logger.error("Error converting profile picture to byte array", e);
+                res.put("profilePicture", "");
+            }
+        }
         return res;
     }
 
     //Uploads a new profile picture for the user
-    public Map<String, Boolean> uploadProfilePicture(@RequestParam Blob newPic, @RequestParam String username){
+    @PostMapping("setProfilePicture/{username}")
+    public Map<String, Boolean> uploadProfilePicture(@RequestBody byte[] img, @PathVariable String username){
+        System.out.println("username is " + username);
+        System.out.println("Blob is " + img.toString());
         logger.info("Attempting to upload new profile picture for user " + username);
         Map<String, Boolean> res = new HashMap<String, Boolean>();
-        boolean updateSuccessful = this.userService.setUserProfilePicture(newPic, username);
+        boolean updateSuccessful = this.userService.setUserProfilePicture(img, username);
         if(updateSuccessful) logger.info("User profile picture change was successful");
 
         res.put("updateSuccessful", updateSuccessful);

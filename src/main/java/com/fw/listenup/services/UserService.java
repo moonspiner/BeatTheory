@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fw.listenup.dao.UserDAO;
+import com.fw.listenup.util.CommonUtil;
 
 @Service
 public class UserService {
@@ -38,13 +39,18 @@ public class UserService {
 
     //Service call for getting the profile image of a user
     public Blob getUserProfilePicture(String username){
+        logger.info("Inside of userProfilePicture service call");
         Blob profilePic = dao.getUserProfilePicture(username);
         return profilePic;
     }
 
     //Service call for setting a new profile picture for the user
-    public boolean setUserProfilePicture(Blob newPic, String username){
-        boolean picIsSet = dao.setUserProfilePicture(newPic, username);
+    public boolean setUserProfilePicture(byte[] img, String username){
+        if(img.length < 1){
+            logger.error("The image string is empty");
+            return false;
+        }
+        boolean picIsSet = dao.setUserProfilePicture(img, username);
         return picIsSet;
     }
 }
