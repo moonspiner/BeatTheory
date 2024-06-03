@@ -10,7 +10,6 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.fw.listenup.crypto.SHA256;
 import com.fw.listenup.dao.AuthDAO;
 import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
@@ -25,6 +24,11 @@ import ch.qos.logback.classic.Logger;
 public class AuthService {
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthService.class);
 
+    //Test connection to the db
+    public boolean testConnection(){
+        AuthDAO dao = new AuthDAO();
+        return dao.testConnection();
+    }
     //Retrieves authentication details for login attempt
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
         AuthDAO dao = new AuthDAO();

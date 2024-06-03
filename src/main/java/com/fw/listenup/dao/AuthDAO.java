@@ -25,6 +25,26 @@ import ch.qos.logback.classic.Logger;
 public class AuthDAO extends DAOBase{
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthDAO.class);
 
+    //Tests the connection to the db and return true if query is successful
+    public boolean testConnection(){
+        boolean connectionIsAvailable = false;
+        try(Connection con = getConnection()){
+            logger.info("Testing db connection");
+            PreparedStatement stmt = con.prepareStatement("select 1");
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()){
+                String val = rs.getString(1);
+                if(!CommonUtil.isEmpty(val)){
+                    return true;
+                }
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return connectionIsAvailable;
+    }
     //Returns the username and password of a user based on email 
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
         UserAuthenticationDetail uad = null;

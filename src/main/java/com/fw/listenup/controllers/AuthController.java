@@ -38,6 +38,13 @@ public class AuthController {
         this.authService = authService;
     }
 
+    //Test the database and API connection.  If successful response, return true
+    @GetMapping("test")
+    public ResponseEntity<Boolean> testConnection(){
+        boolean connectionIsAvailable = this.authService.testConnection();
+        return ResponseEntity.ok(connectionIsAvailable);
+    }
+
     //Controller method, serves as API entry point for retrieiving user auth details from db
     @GetMapping("user/{email}")
     public ResponseEntity<UserAuthenticationDetail> getUserAuthenticationDetails(@PathVariable String email){
