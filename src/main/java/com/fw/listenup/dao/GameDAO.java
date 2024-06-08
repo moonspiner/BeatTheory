@@ -33,7 +33,7 @@ public class GameDAO extends DAOBase{
             
             ResultSet rs = stmt.executeQuery();
             while(rs.next()){
-                int gameId = rs.getInt("game_id");
+                String gameId = rs.getString("game_id");
                 String username = rs.getString("username");
                 int totalCorrect = rs.getInt("total_correct");
                 int totalAttempted = rs.getInt("total_attempted");
@@ -63,7 +63,8 @@ public class GameDAO extends DAOBase{
                     "WHERE username = ? " +
                     "GROUP BY scores.game_id " +
                 ") AS max_scores " +
-                "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_total_correct = s.total_correct";
+                "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_total_correct = s.total_correct " +
+                "ORDER BY s.game_id";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
@@ -71,7 +72,7 @@ public class GameDAO extends DAOBase{
             int count = 0;
             while(rs.next()){
                 count++;
-                int gameId = rs.getInt("game_id");
+                String gameId = rs.getString("game_id");
                 int totalCorrect = rs.getInt("total_correct");
                 int totalAttempted = rs.getInt("total_attempted");
                 String accuracy = rs.getString("accuracy");
