@@ -58,6 +58,14 @@ public class AuthController {
         // logger.info("NOT NULL");
         return ResponseEntity.ok(uad);
     }
+    
+    //Check if a username is taken
+    @GetMapping("user/{username}/isTaken")
+    public ResponseEntity<Boolean> checkIfUsernameTaken(@PathVariable String username){
+        logger.info("Checking for username " + username);
+        boolean isTaken = this.authService.checkIfUsernameTaken(username);
+        return ResponseEntity.ok(isTaken);
+    }
 
     //Takes submitted registration form arguments and checks that username/email are not taken
     @PostMapping("register/isTaken")

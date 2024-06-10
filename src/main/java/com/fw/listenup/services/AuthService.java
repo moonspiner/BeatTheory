@@ -205,4 +205,10 @@ public class AuthService {
         AuthDAO dao = new AuthDAO();
         return dao.checkUserVerificationStatus(email);
     }
+
+    //Checks if a username is taken in the db
+    public boolean checkIfUsernameTaken(String username) {
+        AuthDAO dao = new AuthDAO();
+        return dao.checkIfUsernameTaken(username);
+    }
 }

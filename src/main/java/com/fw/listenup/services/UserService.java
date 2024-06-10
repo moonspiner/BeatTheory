@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fw.listenup.dao.UserDAO;
-import com.fw.listenup.util.CommonUtil;
 
 @Service
 public class UserService {

@@ -406,4 +406,28 @@ public class AuthDAO extends DAOBase{
 
         return res;
     }
+
+    //Looks for the username in the db and returns whether it exists or not
+    public boolean checkIfUsernameTaken(String username) {
+        boolean isTaken = false;
+        try(Connection con = getConnection()){
+            String query = "select username from user where username = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                String currUsername = rs.getString("username");
+                if(CommonUtil.isEmpty(currUsername)){
+                    isTaken = false;
+                } else {
+                    isTaken = true;
+                }
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return isTaken;
+    }
 }
