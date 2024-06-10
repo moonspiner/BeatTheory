@@ -67,6 +67,14 @@ public class AuthController {
         return ResponseEntity.ok(isTaken);
     }
 
+    //Update a pre-existing user's username
+    @PostMapping("user/updateUsername")
+    public ResponseEntity<Boolean> updateUsername(@RequestParam String id, @RequestParam String username){
+        logger.info("Attempting to update username to " + username + " for user with id " + id);
+        boolean userUpdated = this.authService.updateUsername(id, username);
+        return ResponseEntity.ok(userUpdated);
+    }
+
     //Takes submitted registration form arguments and checks that username/email are not taken
     @PostMapping("register/isTaken")
     public ResponseEntity<?> lookupExistingUser(@RequestParam String email, @RequestParam String username){

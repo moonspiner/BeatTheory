@@ -430,4 +430,22 @@ public class AuthDAO extends DAOBase{
 
         return isTaken;
     }
+
+    //Update username and return true if the update was successful
+    public boolean updateUsername(String id, String username){
+        boolean isUpdated = false;
+        try(Connection con = getConnection()){
+            String query = "update user set username = ? where id = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, username);
+            stmt.setString(2, id);
+
+            int rowsAffected = stmt.executeUpdate();
+            isUpdated = rowsAffected > 0;
+        } catch (SQLException e){
+            logConnectionError(e);
+        }
+
+        return isUpdated;
+    }
 }

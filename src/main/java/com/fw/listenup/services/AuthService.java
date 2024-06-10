@@ -207,8 +207,20 @@ public class AuthService {
     }
 
     //Checks if a username is taken in the db
-    public boolean checkIfUsernameTaken(String username) {
+    public boolean checkIfUsernameTaken(String username){
         AuthDAO dao = new AuthDAO();
         return dao.checkIfUsernameTaken(username);
+    }
+
+    //Update a user's username
+    public boolean updateUsername(String id, String username){
+        //Check that the username is <= 16 characters
+        if(username.length() > 16){
+            logger.error("The length of the new username exceeds the 16 character limit");
+            return false;
+        }
+        
+        AuthDAO dao = new AuthDAO();
+        return dao.updateUsername(id, username);
     }
 }
