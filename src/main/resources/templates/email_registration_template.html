@@ -8,8 +8,12 @@
 <body>
     <h1 th:text="${helloUser}">Hello,</h1>
     <p>Thank you for registering with ListenUp.  To complete registration, please click this link: </p>
-    <a th:text="${link}" th:href="@{http://localhost:8080/api/v1/auth/registerToken(uid=${uid})}">http://localhost:8080/api/v1/auth/register?uid=0</a>
+    <!-- <a th:text="${link}" th:href="@{http://localhost:8080/api/v1/auth/registerToken(uid=${uid})}">http://localhost:8080/api/v1/auth/register?uid=0</a> -->
+    <a th:text="${link}" th:href="${link}"></a>
     <p>If you experience any issues with the registration link, either request a new link on our website or contact us directly.</p>
+    <p>A new link can be requested by attempting to log in and clicking 'Click here to resend'.  You can also contact us at 
+        foolishwizard-csr@protonmail.com to request verification.
+    </p>
 
 </body>
 </html>

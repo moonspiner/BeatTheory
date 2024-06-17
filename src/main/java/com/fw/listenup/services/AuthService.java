@@ -166,7 +166,7 @@ public class AuthService {
         AuthDAO dao = new AuthDAO();
         EmailVerificationDetail evd = dao.getEmailVerificationDetail(email);
         if(evd != null){
-            MailUtil.sendEmail(evd);
+            MailUtil.sendRegistraionEmail(evd);
         }
         return evd;
     }

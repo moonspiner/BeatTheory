@@ -15,7 +15,7 @@ import ch.qos.logback.classic.Logger;
 
 public class MailUtil {
     private static Logger logger = (Logger) LoggerFactory.getLogger(MailUtil.class);
-    public static void sendEmail(EmailVerificationDetail evd){
+    public static void sendRegistraionEmail(EmailVerificationDetail evd){
         logger.info("Sending verification email");
         String senderEmail = "ericboland12@gmail.com";
         String senderPassword = "ezab dbti ydog hdhk";
@@ -32,7 +32,7 @@ public class MailUtil {
 
         //Thymleaf context
         String helloUser = "Hello " + evd.getUsername() + ",";
-        String link = "http://localhost:8080/api/v1/auth/registerToken?uid=" + evd.getUid();
+        String link = "http://localhost:4200/finish-verification?token=" + evd.getUid(); //CHANGE THIS LATER
         Context context = new Context();
         context.setVariable("helloUser", helloUser);
         context.setVariable("link", link);
