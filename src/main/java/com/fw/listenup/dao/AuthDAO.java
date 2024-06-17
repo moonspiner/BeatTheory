@@ -118,8 +118,8 @@ public class AuthDAO extends DAOBase{
 
         try(Connection con = getConnection()){
             logger.info("Attempting to insert new user into db");
-            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status, salt) " +
-                                 "values (?,?,?,?,?,?,?,?,?)";
+            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status, salt, admin) " +
+                                 "values (?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(insertQuery);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -130,6 +130,7 @@ public class AuthDAO extends DAOBase{
             stmt.setInt(7, status);
             stmt.setInt(8, verificationStatus);
             stmt.setString(9, salt);
+            stmt.setInt(10, 0);
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){
