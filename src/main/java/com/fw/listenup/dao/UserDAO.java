@@ -62,23 +62,6 @@ public class UserDAO extends DAOBase{
         return null;
     }
 
-    // private byte[] toByteArray(ByteArrayInputStream stream) {
-    //     ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    //     int nRead;
-    //     byte[] data = new byte[16384]; // You can adjust buffer size as needed
-
-    //     try {
-    //         while ((nRead = stream.read(data, 0, data.length)) != -1) {
-    //             buffer.write(data, 0, nRead);
-    //         }
-    //         buffer.flush();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
-
-    //     return buffer.toByteArray();
-    //}
-
     //Sets a new profile picture for the specified user
     public boolean setUserProfilePicture(byte[] img, String username){
         try(Connection con = getConnection()){

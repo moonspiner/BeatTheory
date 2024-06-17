@@ -175,6 +175,7 @@ public class AuthService {
     public EmailVerificationDetail completeRegistration(String uid){
         AuthDAO dao = new AuthDAO();
         EmailVerificationDetail evd = dao.getEmailToken(uid);
+        logger.info(evd.toString());
         if(evd != null){
             if(!uid.equals(evd.getUid())){
                 logger.error("The uids do not match");
@@ -192,6 +193,12 @@ public class AuthService {
         }
 
         return evd;
+    }
+
+    //After registration status is updated, remove current record
+    public boolean removeEmailVerificationRecord(String uid){
+        AuthDAO dao = new AuthDAO();
+        return dao.removeEmailVerificationRecord(uid);
     }
 
     //Updates the newly registered user's verification status

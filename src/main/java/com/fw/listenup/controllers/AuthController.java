@@ -1,6 +1,5 @@
 package com.fw.listenup.controllers;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -177,23 +176,26 @@ public class AuthController {
     }
 
     //Registers user when they navigate to email link
-    @GetMapping("registerToken")
-    public void completeRegistration(@RequestParam("uid") String uid, HttpServletResponse response){
+    @PostMapping("registerToken")
+    public ResponseEntity<Boolean> completeRegistration(@RequestParam String uid, HttpServletResponse response){
         logger.info("Attempting to complete user registration");
         try{
+            //Check if the record exists in the db
             EmailVerificationDetail evd = this.authService.completeRegistration(uid);
             if(evd == null){
                 logger.error("There was an error with verifying the user token in the link");
-                response.sendRedirect("http://localhost:4200/login");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
             }
-            response.sendRedirect("http://localhost:4200/");
+            //Delete current email verification record
+            boolean removedRecord = this.authService.removeEmailVerificationRecord(uid);
+            if(!removedRecord){
+                logger.error("There was an error with removing the record for uid " + uid);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            }
+            return ResponseEntity.ok(true);
         } catch(Exception e){
             logger.error("Error with validation email registration token");
-            try {
-                response.sendRedirect("http://localhost:4200/login");
-            } catch (IOException ioe) {
-                logger.error(ioe.toString());
-            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
         }
 
 

@@ -381,6 +381,28 @@ public class AuthDAO extends DAOBase{
         return res;
     }
 
+    //Remove email verification record
+    public boolean removeEmailVerificationRecord(String uid){
+        logger.info("Removing verification record for uid " + uid);
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "delete from email_verification where uid = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, uid);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0) logger.info("Successfully removed verification record");
+            else logger.info("No record was found for uid " + uid);
+            res = true;
+        } catch(SQLException e){
+            logConnectionError(e);
+            res = false;
+        }
+
+        return res;
+    }
+
     //Looks up user verification status and returns result
     public String checkUserVerificationStatus(String email){
         String res = "";
