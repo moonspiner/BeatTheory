@@ -1,16 +1,20 @@
 package com.fw.listenup.services;
 
 
+import java.nio.file.Files;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
 import com.fw.listenup.dao.AuthDAO;
+import com.fw.listenup.entity.Image;
 import com.fw.listenup.models.auth.EmailVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
@@ -23,6 +27,9 @@ import ch.qos.logback.classic.Logger;
 @Service
 public class AuthService {
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthService.class);
+
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     //Test connection to the db
     public boolean testConnection(){
@@ -94,18 +101,23 @@ public class AuthService {
             byte[] salt = generateSalt();
             String saltString = bytesToHex(salt);
             String saltedPw = pw + saltString;
-            System.out.println("Password before hashing: " + saltedPw);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = md.digest(saltedPw.getBytes());
             String hashedPw = bytesToHex(hashedBytes);
             if(CommonUtil.isEmpty(hashedPw)){
                 logger.error("Hashing of password failed, returning false");
             }
-            System.out.println("Password after hashing: " + hashedPw);
-            isRegistered = dao.registerNewUser(email, username, hashedPw, saltString);
 
-        } catch(NoSuchAlgorithmException e){
-            logger.error("No hashing algorithm was found: " + e.toString());
+            //Prepare default profile picture before calling DAO method
+            Resource imgResource = resourceLoader.getResource("classpath:static/treble-clef.png");
+            byte[] imageData = Files.readAllBytes(imgResource.getFile().toPath());
+
+            Image image = new Image();
+            image.setData(imageData);
+            isRegistered = dao.registerNewUser(email, username, hashedPw, saltString, image.getData());
+
+        } catch(Exception e){
+            logger.error("Error with registering new user: " + e.toString());
         }
 
         return isRegistered;

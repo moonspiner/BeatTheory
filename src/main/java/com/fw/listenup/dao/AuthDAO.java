@@ -1,5 +1,6 @@
 package com.fw.listenup.dao;
 
+import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -107,7 +108,7 @@ public class AuthDAO extends DAOBase{
     }
 
     //Makes insert statement into user table with new credentials
-    public boolean registerNewUser(String email, String username, String password, String salt){
+    public boolean registerNewUser(String email, String username, String password, String salt, byte[] image){
         //Predefined fields for new accounts
         boolean res = false;
         int role = 0;
@@ -118,8 +119,8 @@ public class AuthDAO extends DAOBase{
 
         try(Connection con = getConnection()){
             logger.info("Attempting to insert new user into db");
-            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status, salt, admin) " +
-                                 "values (?,?,?,?,?,?,?,?,?,?)";
+            String insertQuery = "insert into user (username, password, email, role, rank_id, created_at, status, verification_status, salt, admin, profile_picture) " +
+                                 "values (?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement stmt = con.prepareStatement(insertQuery);
             stmt.setString(1, username);
             stmt.setString(2, password);
@@ -131,6 +132,7 @@ public class AuthDAO extends DAOBase{
             stmt.setInt(8, verificationStatus);
             stmt.setString(9, salt);
             stmt.setInt(10, 0);
+            stmt.setBlob(11, new ByteArrayInputStream(image));
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){

@@ -95,7 +95,8 @@ public class AuthController {
 
     //Registers new user
     @PostMapping("register")
-    public Map<String, Boolean> registerNewUser(@RequestParam String email, @RequestParam String username, @RequestParam String pw){
+    public Map<String, Boolean> registerNewUser(@RequestParam String email, @RequestParam String username, 
+                                                @RequestParam String pw){
         logger.info("Registration request made for new user " + email);
         //Map result that returns whether user was properly registered
         Map<String, Boolean> res = new HashMap<String, Boolean>();
@@ -187,11 +188,11 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
             }
             //Delete current email verification record
-            boolean removedRecord = this.authService.removeEmailVerificationRecord(uid);
-            if(!removedRecord){
-                logger.error("There was an error with removing the record for uid " + uid);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
-            }
+            // boolean removedRecord = this.authService.removeEmailVerificationRecord(uid);
+            // if(!removedRecord){
+            //     logger.error("There was an error with removing the record for uid " + uid);
+            //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
+            // }
             return ResponseEntity.ok(true);
         } catch(Exception e){
             logger.error("Error with validation email registration token");
