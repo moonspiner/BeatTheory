@@ -40,6 +40,7 @@ public class GameController {
     public ResponseEntity<ArrayList<LeaderboardRecord>> getScores(){
         logger.info("Request for leaderboard details has been made");
         ArrayList<LeaderboardRecord> scores = this.gameService.getLeaderboardRecords();
+        
         //Check to see if the array list is populated
         if(scores.size() > 0){
             logger.info("Score successfully retrieved");
@@ -55,13 +56,9 @@ public class GameController {
     public ResponseEntity<ArrayList<LeaderboardRecord>> getUserScores(@PathVariable String username){
         logger.info("Retrieving records for user " + username);
         ArrayList<LeaderboardRecord> scores = this.gameService.getUserLeaderboardRecords(username);
-        if(scores.size() > 0){
-            logger.info("Score successfully retrieved");
-            return ResponseEntity.ok(scores);
-        }
-        
-        //The array list is empty, so return an error
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(scores);
+        if(scores.size() > 0) logger.info("Score successfully retrieved");
+        if(scores != null) logger.info("User " + username + " does not have any score records");
+        return ResponseEntity.ok(scores);
     }
 
     //Sets a new record into the score table
