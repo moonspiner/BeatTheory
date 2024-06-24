@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import com.fw.listenup.dao.AuthDAO;
 import com.fw.listenup.entity.Image;
 import com.fw.listenup.models.auth.EmailVerificationDetail;
+import com.fw.listenup.models.auth.PasswordVerificationDetail;
 import com.fw.listenup.models.auth.RegistrationLookupDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.util.CommonUtil;
@@ -160,7 +161,7 @@ public class AuthService {
         try{
             boolean tokenGenerated = dao.generateEmailVerificationToken(email);
             if(tokenGenerated){
-                logger.info("Token is generated, proceeding to send email");
+                logger.info("Token is generated, proceeding to send account verification email");
                 String uid = dao.getVerificationToken(email);
                 if(!CommonUtil.isEmpty(uid)){
                     res = true;
@@ -181,6 +182,38 @@ public class AuthService {
             MailUtil.sendRegistraionEmail(evd);
         }
         return evd;
+    }
+
+    //Generates a password reset email verification token
+    public boolean generatePasswordResetEmailVerificationToken(String email){
+        boolean res = false;
+
+        AuthDAO dao = new AuthDAO();
+        try{
+            boolean tokenGenerated = dao.generatePasswordResetEmailVerificationToken(email);
+            if(tokenGenerated){
+                logger.info("Token is generated, proceeding to send password reset email");
+                String uid = dao.getPasswordResetVerificationToken(email);
+                if(!CommonUtil.isEmpty(uid)){
+                    res = true;
+                }
+            }
+        } catch(SQLException e){
+            logger.error(e.toString());
+        }
+        return res;
+    }
+
+    //Send a password reset email to the specified user
+    public boolean sendPasswordResetEmail(String email){
+        boolean mailSent = false;
+        AuthDAO dao = new AuthDAO();
+        PasswordVerificationDetail pvd = dao.getPasswordVerificationDetail(email);
+        if(pvd != null){
+            mailSent = MailUtil.sendPasswordResetEmail(pvd);
+        }
+
+        return mailSent;
     }
 
     //Completes registration if uid matches and is within timerange

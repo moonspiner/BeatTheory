@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
 import com.fw.listenup.models.auth.EmailVerificationDetail;
+import com.fw.listenup.models.auth.PasswordVerificationDetail;
 import com.fw.listenup.models.auth.UserAuthenticationDetail;
 import com.fw.listenup.util.CommonUtil;
 import com.fw.listenup.util.JwtUtil;
@@ -273,12 +274,122 @@ public class AuthDAO extends DAOBase{
         return res;
     }
 
+    //Retrieves verification token from database
     public String getVerificationToken(String email){
         logger.info("Retrieving token for user " + email);
         String res = "";
 
         try(Connection con = getConnection()){
             String query = "select uid from email_verification where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                res = rs.getString("uid");
+            } else{
+                logger.error("No uid found for user " + email);
+            }
+
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
+
+    //Generates a new email token to be used for password reset attempt
+    public boolean generatePasswordResetEmailVerificationToken(String email) throws SQLException {
+        boolean res = false;
+        String token = UUID.randomUUID().toString();
+
+        //Check for pre-existing token.  If one exists, delete it and recall method
+        if(passwordResetEmailTokenExists(email)){
+            boolean deleted = deletePasswordResetEmailToken(email);
+            if(!deleted) throw new SQLException("Token exists, but deletion failed");
+        }
+
+        try(Connection con = getConnection()){
+            logger.info("Attempting to insert new password token");
+            String query = "insert into password_reset (uid, email) values (?,?)";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, token);
+            stmt.setString(2, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Insert into password_reset successful for user " + email);
+                res = true;
+
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
+
+    //Checks for existing password reset token.  If it exists, deletes current one and replaces it with 
+    //new token
+    private boolean passwordResetEmailTokenExists(String email){
+        logger.info("Checking for existing verification token");
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "select count(*) from password_reset where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                int count = rs.getInt(1);
+                if(count > 0){
+                    logger.info("Email token exists, generate new one");
+                    res = true;
+                } else{ 
+                    logger.info("Email token does not currently exist");
+                }
+            } else{
+                logger.error("There was an error when checking for existing email token.  Generating" +
+                " new email token");
+                res = true;
+            }
+
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        return res;
+    }
+
+    //Deletes old password reset email token from the database
+    private boolean deletePasswordResetEmailToken(String email){
+        logger.info("Deleting current password reset token for user " + email);
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "delete from password_reset where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            if(rowsAffected > 0){
+                logger.info("Deleted existing token");
+                res = true;
+            } else{
+                logger.error("No rows were found to be deleted for user " + email);
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return res;
+    }
+
+    //Retrieves password reset token from database
+    public String getPasswordResetVerificationToken(String email){
+        logger.info("Retrieving password reset token for user " + email);
+        String res = "";
+
+        try(Connection con = getConnection()){
+            String query = "select uid from password_reset where email = ?";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, email);
 
@@ -326,6 +437,37 @@ public class AuthDAO extends DAOBase{
         }
         logger.info("Returning email verification details to service layer");
         return evd;
+    }
+
+    //Gets the password verification details to be sent to the password reset email template.
+    public PasswordVerificationDetail getPasswordVerificationDetail(String email){
+        logger.info("Retrieving password verification details for user " + email);
+        PasswordVerificationDetail pvd = null;
+
+        try(Connection con = getConnection()){
+            String query = "select uid, email from password_reset where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, email);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                String email2 = rs.getString("email");
+                String uid = rs.getString("uid");
+
+                //Make sure no fields are null
+                if(CommonUtil.isEmpty(email2) || CommonUtil.isEmpty(uid)){
+                    logger.error("One of the password reset verification details fields is null");
+                    return pvd;
+                }
+
+                pvd = new PasswordVerificationDetail(email2, uid);
+            }
+            
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+        logger.info("Returning password verification details to service layer");
+        return pvd;
     }
 
     //Lookups email verification detail with uid and returns the email, uid, and timestamp

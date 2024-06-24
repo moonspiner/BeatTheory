@@ -10,25 +10,18 @@ import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import com.fw.listenup.models.auth.EmailVerificationDetail;
+import com.fw.listenup.models.auth.PasswordVerificationDetail;
 
 import ch.qos.logback.classic.Logger;
 
 public class MailUtil {
     private static Logger logger = (Logger) LoggerFactory.getLogger(MailUtil.class);
+    private static String senderEmail = "ericboland12@gmail.com";
+    private static String senderPassword = "ezab dbti ydog hdhk";
+    private static String smtpHost = "smtp.googlemail.com";
+    private static int smtpPort = 465;
     public static void sendRegistraionEmail(EmailVerificationDetail evd){
         logger.info("Sending verification email");
-        String senderEmail = "ericboland12@gmail.com";
-        String senderPassword = "ezab dbti ydog hdhk";
-
-        // SMTP server host and port
-        String smtpHost = "smtp.googlemail.com";
-        int smtpPort = 465;
-
-        //Init thymeleaf
-        TemplateEngine templateEngine = new TemplateEngine();
-        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
-        templateResolver.setTemplateMode(TemplateMode.HTML);
-        templateEngine.setTemplateResolver(templateResolver);
 
         //Thymleaf context
         String helloUser = "Hello " + evd.getUsername() + ",";
@@ -37,29 +30,73 @@ public class MailUtil {
         context.setVariable("helloUser", helloUser);
         context.setVariable("link", link);
         try {
-            
             //HTML template
+            TemplateEngine templateEngine = initThymeTemplate();
             String templateFilePath = "templates/email_registration_template.html";
             String processedHtml = templateEngine.process(templateFilePath, context);
 
             // Create the email message
-            HtmlEmail email = new HtmlEmail();
-            email.setHostName(smtpHost);
-            email.setSmtpPort(smtpPort);
-            email.setAuthenticator(new DefaultAuthenticator(senderEmail, senderPassword));
-            email.setSSLOnConnect(true); // Use SSL
-            email.setFrom(senderEmail);
-            email.addTo(evd.getEmail());
-            email.setSubject("ListenUp - Verify your Account");
-            email.setHtmlMsg(processedHtml);
+            HtmlEmail emailTemplate = new HtmlEmail();
+            emailTemplate.setHostName(smtpHost);
+            emailTemplate.setSmtpPort(smtpPort);
+            emailTemplate.setAuthenticator(new DefaultAuthenticator(senderEmail, senderPassword));
+            emailTemplate.setSSLOnConnect(true); // Use SSL
+            emailTemplate.setFrom(senderEmail);
+            emailTemplate.addTo(evd.getEmail());
+            emailTemplate.setSubject("ListenUp - Verify your Account");
+            emailTemplate.setHtmlMsg(processedHtml);
 
             // Send the email
-            email.send();
+            emailTemplate.send();
 
-            logger.info("Email sent successfully!");
+            logger.info("Registration email sent successfully!");
 
         } catch (EmailException e) {
             logger.error("There was an error with sending the verification email: " + e.toString());
         }
-    }    
+    }
+    
+    public static boolean sendPasswordResetEmail(PasswordVerificationDetail pvd){
+        logger.info("Sending password reset email");
+
+        //Thymleaf context
+        String link = "http://localhost:4200/reset-password?token=" + pvd.getUid(); //CHANGE THIS LATER
+        Context context = new Context();
+        context.setVariable("link", link);
+        try {
+            //HTML template
+            TemplateEngine templateEngine = initThymeTemplate();
+            String templateFilePath = "templates/password_reset_template.html";
+            String processedHtml = templateEngine.process(templateFilePath, context);
+
+            // Create the email message
+            HtmlEmail emailTemplate = new HtmlEmail();
+            emailTemplate.setHostName(smtpHost);
+            emailTemplate.setSmtpPort(smtpPort);
+            emailTemplate.setAuthenticator(new DefaultAuthenticator(senderEmail, senderPassword));
+            emailTemplate.setSSLOnConnect(true); // Use SSL
+            emailTemplate.setFrom(senderEmail);
+            emailTemplate.addTo(pvd.getEmail());
+            emailTemplate.setSubject("ListenUp - Reset your Password");
+            emailTemplate.setHtmlMsg(processedHtml);
+
+            // Send the email
+            emailTemplate.send();
+            logger.info("Email sent successfully!");
+            return true;
+
+        } catch (EmailException e) {
+            logger.error("There was an error with sending the password reset email: " + e.toString());
+            return false;
+        }
+    }
+    
+    //Init Thymeleaf
+    private static TemplateEngine initThymeTemplate(){
+        TemplateEngine templateEngine = new TemplateEngine();
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateEngine.setTemplateResolver(templateResolver);
+        return templateEngine;
+    }
 }

@@ -176,6 +176,42 @@ public class AuthController {
         return res;
     }
 
+    //Generate a password reset token
+    @PostMapping("generatePasswordResetToken")
+    public Map<String, Boolean> generatePasswordResetVerificationToken(@RequestParam String email){
+        logger.info("Generating password reset token for user " + email);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "tokenGenerated";
+        try{
+            boolean isGenerated = authService.generatePasswordResetEmailVerificationToken(email);
+            if(!isGenerated) logger.error("Failed to generate email auth token");
+            else logger.info("New email auth token has been generated for user " + email);
+            res.put(resKey, isGenerated);
+        } catch(Exception e){
+            logger.error("Email token generation error: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+
+    //Send password reset email
+    @PostMapping("sendPasswordResetEmail")
+    public Map<String, Boolean> sendPasswordResetEmail(@RequestParam String email){
+        logger.info("Sending password reset email to user " + email);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "emailSent";
+        try{
+            boolean emailSent = authService.sendPasswordResetEmail(email);
+            res.put(resKey, emailSent);
+        } catch(Exception e){
+            logger.error("There was an error with sending the password reset email: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+
     //Registers user when they navigate to email link
     @PostMapping("registerToken")
     public ResponseEntity<Boolean> completeRegistration(@RequestParam String uid, HttpServletResponse response){
