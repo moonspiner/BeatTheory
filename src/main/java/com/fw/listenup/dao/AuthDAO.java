@@ -300,8 +300,14 @@ public class AuthDAO extends DAOBase{
     //Generates a new email token to be used for password reset attempt
     public boolean generatePasswordResetEmailVerificationToken(String email) throws SQLException {
         boolean res = false;
-        String token = UUID.randomUUID().toString();
 
+        //Pre-defined values
+        String token = UUID.randomUUID().toString();
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        Date currentDate = new Date(currentTime.getTime());
+        Date nextDayDate = new Date(currentDate.getTime() + (60 * 60 * 1000)); // 60 minutes * 60 seconds * 1000 milliseconds
+        Timestamp expirationTime = new Timestamp(nextDayDate.getTime());
+    
         //Check for pre-existing token.  If one exists, delete it and recall method
         if(passwordResetEmailTokenExists(email)){
             boolean deleted = deletePasswordResetEmailToken(email);
@@ -310,10 +316,11 @@ public class AuthDAO extends DAOBase{
 
         try(Connection con = getConnection()){
             logger.info("Attempting to insert new password token");
-            String query = "insert into password_reset (uid, email) values (?,?)";
+            String query = "insert into password_reset (uid, email, expires_by) values (?,?,?)";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, token);
             stmt.setString(2, email);
+            stmt.setTimestamp(3, expirationTime);
 
             int rowsAffected = stmt.executeUpdate();
             if(rowsAffected > 0){
@@ -445,7 +452,7 @@ public class AuthDAO extends DAOBase{
         PasswordVerificationDetail pvd = null;
 
         try(Connection con = getConnection()){
-            String query = "select uid, email from password_reset where email = ?";
+            String query = "select uid, email, expires_by from password_reset where email = ?";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, email);
 
@@ -453,14 +460,15 @@ public class AuthDAO extends DAOBase{
             if(rs.next()){
                 String email2 = rs.getString("email");
                 String uid = rs.getString("uid");
+                Timestamp expiresBy = rs.getTimestamp("expires_by");
 
                 //Make sure no fields are null
-                if(CommonUtil.isEmpty(email2) || CommonUtil.isEmpty(uid)){
+                if(CommonUtil.isEmpty(email2) || CommonUtil.isEmpty(uid) || CommonUtil.isEmpty(expiresBy.toString())){
                     logger.error("One of the password reset verification details fields is null");
                     return pvd;
                 }
 
-                pvd = new PasswordVerificationDetail(email2, uid);
+                pvd = new PasswordVerificationDetail(email2, uid, expiresBy);
             }
             
         } catch(SQLException e){
