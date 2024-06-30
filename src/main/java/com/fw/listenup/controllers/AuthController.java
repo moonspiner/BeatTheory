@@ -212,6 +212,23 @@ public class AuthController {
         return res;
     }
 
+    //Update user's password
+    @PostMapping("updatePassword")
+    public Map<String, Boolean> updatePassword(@RequestParam String token, @RequestParam String pw){
+        logger.info("Updating user password");
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "passwordUpdated";
+        try{
+            boolean passwordUpdated = authService.updatePassword(token, pw);
+            res.put(resKey, passwordUpdated);
+        } catch(Exception e){
+            logger.error("There was an error with sending the password reset email: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+
     //Registers user when they navigate to email link
     @PostMapping("registerToken")
     public ResponseEntity<Boolean> completeRegistration(@RequestParam String uid, HttpServletResponse response){
@@ -223,12 +240,7 @@ public class AuthController {
                 logger.error("There was an error with verifying the user token in the link");
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
             }
-            //Delete current email verification record
-            // boolean removedRecord = this.authService.removeEmailVerificationRecord(uid);
-            // if(!removedRecord){
-            //     logger.error("There was an error with removing the record for uid " + uid);
-            //     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(false);
-            // }
+
             return ResponseEntity.ok(true);
         } catch(Exception e){
             logger.error("Error with validation email registration token");

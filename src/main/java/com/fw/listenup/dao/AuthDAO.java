@@ -305,7 +305,7 @@ public class AuthDAO extends DAOBase{
         String token = UUID.randomUUID().toString();
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
         Date currentDate = new Date(currentTime.getTime());
-        Date nextDayDate = new Date(currentDate.getTime() + (60 * 60 * 1000)); // 60 minutes * 60 seconds * 1000 milliseconds
+        Date nextDayDate = new Date(currentDate.getTime() + (15 * 60 * 1000)); // 15 minutes * 60 seconds * 1000 milliseconds
         Timestamp expirationTime = new Timestamp(nextDayDate.getTime());
     
         //Check for pre-existing token.  If one exists, delete it and recall method
@@ -620,6 +620,49 @@ public class AuthDAO extends DAOBase{
         } catch (SQLException e){
             logConnectionError(e);
         }
+
+        return isUpdated;
+    }
+
+    //Looks for existing password verification detail record given a token
+    public PasswordVerificationDetail getPasswordVerificationRecord(String token){
+        PasswordVerificationDetail pvd = null;
+        try(Connection con = getConnection()){
+            String query = "select email, uid, expires_by from password_reset where uid = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, token);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                String email = rs.getString("email");
+                String uid = rs.getString("uid");
+                Timestamp expiresBy = rs.getTimestamp("expires_by");
+                pvd = new PasswordVerificationDetail(email, uid, expiresBy);
+            }else{
+                logger.error("NO PW VERI RECORDS FOUND");
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return pvd;
+    }
+
+    //Update the user's password in the user table
+    public boolean updatePassword(String email, String pw){
+        boolean isUpdated = false;
+        try(Connection con = getConnection()){
+            String query = "update user set password = ? where email = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, pw);
+            stmt.setString(2, email);
+
+            int rowsAffected = stmt.executeUpdate();
+            isUpdated = rowsAffected > 0;
+        } catch (SQLException e){
+            logConnectionError(e);
+        }
+
 
         return isUpdated;
     }

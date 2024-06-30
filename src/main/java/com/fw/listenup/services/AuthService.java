@@ -1,10 +1,11 @@
 package com.fw.listenup.services;
 
-
 import java.nio.file.Files;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Map;
 
 import org.springframework.core.io.Resource;
@@ -37,6 +38,7 @@ public class AuthService {
         AuthDAO dao = new AuthDAO();
         return dao.testConnection();
     }
+
     //Retrieves authentication details for login attempt
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
         AuthDAO dao = new AuthDAO();
@@ -210,6 +212,7 @@ public class AuthService {
         AuthDAO dao = new AuthDAO();
         PasswordVerificationDetail pvd = dao.getPasswordVerificationDetail(email);
         if(pvd != null){
+            //Password verification detail exists, proceed to send email
             mailSent = MailUtil.sendPasswordResetEmail(pvd);
         }
 
@@ -274,5 +277,58 @@ public class AuthService {
         
         AuthDAO dao = new AuthDAO();
         return dao.updateUsername(id, username);
+    }
+
+    //Update a user's password
+    public boolean updatePassword(String token, String pw){
+        //Verify that the token is valid
+        logger.info("Token is " + token);
+        logger.info("Plaintext password is " + pw);
+        if(CommonUtil.isEmpty(token)){
+            logger.error("Token is empty, password cannot be updated...");
+            return false;
+        }
+
+
+        //Look for matching record in password reset table
+        AuthDAO dao = new AuthDAO();
+        PasswordVerificationDetail pvd = dao.getPasswordVerificationRecord(token); 
+        if(pvd != null){
+            logger.info("Password verification record is populated");
+            Timestamp expiresBy = pvd.getExpiresBy();
+            long expiresByToUnix = expiresBy.getTime();
+            long currentTime = System.currentTimeMillis();
+
+            //Check if the password reset link has expired
+            if(currentTime > expiresByToUnix){
+                logger.error("Password reset token has expired");
+                return false;
+            }
+
+            try{
+                //Token is good, proceed to update the password
+                //Hash and salt the password
+                byte[] salt = generateSalt();
+                String saltString = bytesToHex(salt);
+                String saltedPw = pw + saltString;
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                byte[] hashedBytes = md.digest(saltedPw.getBytes());
+                String hashedPw = bytesToHex(hashedBytes);
+
+                //Call update statement in the database
+                String email = pvd.getEmail();
+                boolean isUpdated = dao.updatePassword(email, hashedPw);
+                if(!isUpdated) logger.error("There was an error with updating the new password in the database");
+                return isUpdated;
+            } catch(NoSuchAlgorithmException e){
+                logger.error("There was an error with hashing the new password: " + e.toString());
+                return false;
+            }
+            
+        }
+
+        //Password verification object is null, returning false
+        logger.error("Password verification record is null");
+        return false;
     }
 }

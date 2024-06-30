@@ -60,7 +60,7 @@ public class MailUtil {
         logger.info("Sending password reset email");
 
         //Thymleaf context
-        String link = "http://localhost:4200/reset-password?token=" + pvd.getUid(); //CHANGE THIS LATER
+        String link = "http://localhost:4200/verify-password-reset?token=" + pvd.getUid(); //CHANGE THIS LATER
         Context context = new Context();
         context.setVariable("link", link);
         try {
