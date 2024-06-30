@@ -229,6 +229,23 @@ public class AuthController {
         return res;
     }
 
+    //Delete the old password token
+    @PostMapping("deletePasswordResetToken")
+    public Map<String, Boolean> deletePasswordResetToken(@RequestParam String token){
+        logger.info("Deleting token " + token);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "tokenDeleted";
+        try{
+            boolean tokenDeleted = authService.deletePassworeResetToken(token);
+            res.put(resKey, tokenDeleted);
+        } catch(Exception e){
+            logger.error("There was an error with deleting the password reset token: " + e.toString());
+            res.put(resKey, false);
+        }
+
+        return res;
+    }
+
     //Registers user when they navigate to email link
     @PostMapping("registerToken")
     public ResponseEntity<Boolean> completeRegistration(@RequestParam String uid, HttpServletResponse response){

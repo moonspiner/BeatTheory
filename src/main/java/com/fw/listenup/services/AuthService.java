@@ -282,13 +282,10 @@ public class AuthService {
     //Update a user's password
     public boolean updatePassword(String token, String pw){
         //Verify that the token is valid
-        logger.info("Token is " + token);
-        logger.info("Plaintext password is " + pw);
         if(CommonUtil.isEmpty(token)){
             logger.error("Token is empty, password cannot be updated...");
             return false;
         }
-
 
         //Look for matching record in password reset table
         AuthDAO dao = new AuthDAO();
@@ -317,7 +314,7 @@ public class AuthService {
 
                 //Call update statement in the database
                 String email = pvd.getEmail();
-                boolean isUpdated = dao.updatePassword(email, hashedPw);
+                boolean isUpdated = dao.updatePassword(email, hashedPw, saltString);
                 if(!isUpdated) logger.error("There was an error with updating the new password in the database");
                 return isUpdated;
             } catch(NoSuchAlgorithmException e){
@@ -330,5 +327,11 @@ public class AuthService {
         //Password verification object is null, returning false
         logger.error("Password verification record is null");
         return false;
+    }
+
+    //Delete the old password reset token
+    public boolean deletePassworeResetToken(String token){
+        AuthDAO dao = new AuthDAO();
+        return dao.deletePasswordResetEmailTokenAfterSuccess(token);
     }
 }

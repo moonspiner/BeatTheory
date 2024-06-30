@@ -383,7 +383,26 @@ public class AuthDAO extends DAOBase{
             } else{
                 logger.error("No rows were found to be deleted for user " + email);
             }
-        } catch(SQLException e){
+        }catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return res;
+    }
+
+    //Deletes old password reset email token after successful password change
+    public boolean deletePasswordResetEmailTokenAfterSuccess(String token){
+        logger.info("Deleting current password reset token for token " + token);
+        boolean res = false;
+
+        try(Connection con = getConnection()){
+            String query = "delete from password_reset where uid = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, token);
+
+            int rowsAffected = stmt.executeUpdate();
+            res = rowsAffected > 0;
+        }catch(SQLException e){
             logConnectionError(e);
         }
 
@@ -638,8 +657,6 @@ public class AuthDAO extends DAOBase{
                 String uid = rs.getString("uid");
                 Timestamp expiresBy = rs.getTimestamp("expires_by");
                 pvd = new PasswordVerificationDetail(email, uid, expiresBy);
-            }else{
-                logger.error("NO PW VERI RECORDS FOUND");
             }
         } catch(SQLException e){
             logConnectionError(e);
@@ -649,13 +666,14 @@ public class AuthDAO extends DAOBase{
     }
 
     //Update the user's password in the user table
-    public boolean updatePassword(String email, String pw){
+    public boolean updatePassword(String email, String pw, String salt){
         boolean isUpdated = false;
         try(Connection con = getConnection()){
-            String query = "update user set password = ? where email = ?";
+            String query = "update user set password = ?, salt = ? where email = ?";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, pw);
-            stmt.setString(2, email);
+            stmt.setString(2, salt);
+            stmt.setString(3, email);
 
             int rowsAffected = stmt.executeUpdate();
             isUpdated = rowsAffected > 0;
