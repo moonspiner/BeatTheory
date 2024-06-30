@@ -645,6 +645,8 @@ public class AuthDAO extends DAOBase{
 
     //Looks for existing password verification detail record given a token
     public PasswordVerificationDetail getPasswordVerificationRecord(String token){
+        logger.info("Attempting to retrieve password verification record from db...");
+        logger.info("token is " + token);
         PasswordVerificationDetail pvd = null;
         try(Connection con = getConnection()){
             String query = "select email, uid, expires_by from password_reset where uid = ?";
