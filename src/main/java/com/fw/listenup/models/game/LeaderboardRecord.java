@@ -6,16 +6,18 @@ import java.sql.Date;
 public class LeaderboardRecord {
     private String gameId;
     private String username;
+    private int score;
     private int totalCorrect;
     private int totalAttempted;
     private String accuracy;
     private Date timestamp;
     private int rank;
 
-    public LeaderboardRecord(String gameId, String username, int totalCorrect, int totalAttempted,
+    public LeaderboardRecord(String gameId, String username, int score, int totalCorrect, int totalAttempted,
                             String accuracy, Date timestamp){
         this.gameId = gameId;
         this.username = username;
+        this.score = score;
         this.totalCorrect = totalCorrect;
         this.totalAttempted = totalAttempted;
         this.accuracy = accuracy;
@@ -38,6 +40,14 @@ public class LeaderboardRecord {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public int getScore(){
+        return this.score;
+    }
+
+    public void setScore(int score){
+        this.score = score;
     }
 
     public int getTotalCorrect() {
@@ -86,10 +96,11 @@ public class LeaderboardRecord {
         return "{" +
             " gameId='" + getGameId() + "'" +
             ", username='" + getUsername() + "'" +
+            ", score='" + getScore() + "'" +
             ", totalCorrect='" + getTotalCorrect() + "'" +
             ", totalAttempted='" + getTotalAttempted() + "'" +
             ", accuracy='" + getAccuracy() + "'" +
-            ", timeElapsed='" + getTimestamp() + "'" +
+            ", timestamp='" + getTimestamp() + "'" +
             ", rank='" + getRank() + "'" +
             "}";
     }
