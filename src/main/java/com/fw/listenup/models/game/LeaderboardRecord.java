@@ -7,17 +7,19 @@ public class LeaderboardRecord {
     private String gameId;
     private String username;
     private int score;
+    private int difficulty;
     private int totalCorrect;
     private int totalAttempted;
     private String accuracy;
     private Date timestamp;
     private int rank;
 
-    public LeaderboardRecord(String gameId, String username, int score, int totalCorrect, int totalAttempted,
+    public LeaderboardRecord(String gameId, String username, int score, int difficulty, int totalCorrect, int totalAttempted,
                             String accuracy, Date timestamp){
         this.gameId = gameId;
         this.username = username;
         this.score = score;
+        this.difficulty = difficulty;
         this.totalCorrect = totalCorrect;
         this.totalAttempted = totalAttempted;
         this.accuracy = accuracy;
@@ -48,6 +50,14 @@ public class LeaderboardRecord {
 
     public void setScore(int score){
         this.score = score;
+    }
+
+    public int getDifficulty(){
+        return this.difficulty;
+    }
+
+    public void setDifficulty(int difficulty){
+        this.difficulty = difficulty;
     }
 
     public int getTotalCorrect() {

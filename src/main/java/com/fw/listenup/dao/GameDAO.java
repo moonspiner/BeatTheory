@@ -29,6 +29,7 @@ public class GameDAO extends DAOBase{
                     "    scores.game_id, " +
                     "    u.username, " +
                     "    scores.score, " +
+                    "    scores.difficulty, " +
                     "    scores.total_correct, " +
                     "    scores.total_attempted, " +
                     "    scores.accuracy, " +
@@ -41,6 +42,7 @@ public class GameDAO extends DAOBase{
                 "    game_id, " +
                 "    username, " + 
                 "    score, " +
+                "    difficulty, " +
                 "    total_correct, " +
                 "    total_attempted, " +
                 "    accuracy, " +
@@ -56,12 +58,13 @@ public class GameDAO extends DAOBase{
                 String gameId = rs.getString("game_id");
                 String username = rs.getString("username");
                 int score = rs.getInt("score");
+                int difficulty = rs.getInt("difficulty");
                 int totalCorrect = rs.getInt("total_correct");
                 int totalAttempted = rs.getInt("total_attempted");
                 String accuracy = rs.getString("accuracy");
                 Date timestamp = rs.getDate("time_submitted");
 
-                LeaderboardRecord record = new LeaderboardRecord(gameId, username, score, totalCorrect, totalAttempted, accuracy, timestamp);
+                LeaderboardRecord record = new LeaderboardRecord(gameId, username, score, difficulty, totalCorrect, totalAttempted, accuracy, timestamp);
                 scores.add(record);
             }
         } catch(SQLException e){
@@ -76,7 +79,7 @@ public class GameDAO extends DAOBase{
         ArrayList<LeaderboardRecord> scores = new ArrayList<LeaderboardRecord>();
         try(Connection con = getConnection()){
             logger.info("Calling db for score details");
-            String query = "SELECT s.game_id, s.score, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
+            String query = "SELECT s.game_id, s.score, s.difficulty, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
                 "FROM ( " +
                     "SELECT scores.game_id, scores.user_id, MAX(scores.score) AS max_score " +
                     "FROM scores " +
@@ -96,12 +99,13 @@ public class GameDAO extends DAOBase{
                 count++;
                 String gameId = rs.getString("game_id");
                 int score = rs.getInt("score");
+                int difficulty = rs.getInt("difficulty");
                 int totalCorrect = rs.getInt("total_correct");
                 int totalAttempted = rs.getInt("total_attempted");
                 String accuracy = rs.getString("accuracy");
                 Date timestamp = rs.getDate("time_submitted");
 
-                LeaderboardRecord record = new LeaderboardRecord(gameId, username, score, totalCorrect, totalAttempted, accuracy, timestamp);
+                LeaderboardRecord record = new LeaderboardRecord(gameId, username, score, difficulty, totalCorrect, totalAttempted, accuracy, timestamp);
                 scores.add(record);
             }
 
