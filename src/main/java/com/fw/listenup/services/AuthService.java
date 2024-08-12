@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.springframework.core.io.Resource;
@@ -29,25 +30,27 @@ import ch.qos.logback.classic.Logger;
 @Service
 public class AuthService {
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthService.class);
-
+    private final AuthDAO dao;
     @Autowired
     private ResourceLoader resourceLoader;
 
+    @Autowired
+    public AuthService(AuthDAO dao){
+        this.dao = dao;
+    }
+
     //Test connection to the db
     public boolean testConnection(){
-        AuthDAO dao = new AuthDAO();
         return dao.testConnection();
     }
 
     //Retrieves authentication details for login attempt
     public UserAuthenticationDetail getUserAuthenticationDetail(String email){
-        AuthDAO dao = new AuthDAO();
         return dao.getUserAuthenticationDetail(email);
     }
 
     //Lookups pre-existing user
     public RegistrationLookupDetail lookupExistingUser(String email, String username){
-        AuthDAO dao = new AuthDAO();
         boolean emailTaken = false;
         boolean usernameTaken = false;
 
@@ -77,8 +80,6 @@ public class AuthService {
 
     //Overloaded method for looking up exisiting user
     private boolean lookupExistingUser(String email){
-        AuthDAO dao= new AuthDAO();
-
         try{
             Map<String, String> credMap = dao.getExistingEmailAndUsername(email, "");
             if(credMap.containsKey("email")){
@@ -96,7 +97,6 @@ public class AuthService {
 
     //Registers a new user
     public boolean registerNewUser(String email, String username, String pw){
-        AuthDAO dao = new AuthDAO();
         boolean isRegistered = false;
         
         //Before registering, hash the password
@@ -146,20 +146,15 @@ public class AuthService {
 
     //Logs authentication attempt in db
     public boolean logAuthAttempt(String email, boolean valid){
-        AuthDAO dao = new AuthDAO();
         boolean userExists = lookupExistingUser(email); //Check if user exists
         boolean res = dao.logAuthAttempt(email, valid, userExists);
 
         return res;
-
-
     }
 
     //Generates an email verification token
     public boolean generateEmailVerificationToken(String email){
-        boolean res = false; 
-
-        AuthDAO dao = new AuthDAO();
+        boolean res = false;   
         try{
             boolean tokenGenerated = dao.generateEmailVerificationToken(email);
             if(tokenGenerated){
@@ -178,7 +173,6 @@ public class AuthService {
 
     //Sends verification email to a user if the email verification details return populated
     public EmailVerificationDetail sendVerificationEmail(String email){
-        AuthDAO dao = new AuthDAO();
         EmailVerificationDetail evd = dao.getEmailVerificationDetail(email);
         if(evd != null){
             MailUtil.sendRegistraionEmail(evd);
@@ -189,8 +183,6 @@ public class AuthService {
     //Generates a password reset email verification token
     public boolean generatePasswordResetEmailVerificationToken(String email){
         boolean res = false;
-
-        AuthDAO dao = new AuthDAO();
         try{
             boolean tokenGenerated = dao.generatePasswordResetEmailVerificationToken(email);
             if(tokenGenerated){
@@ -209,7 +201,6 @@ public class AuthService {
     //Send a password reset email to the specified user
     public boolean sendPasswordResetEmail(String email){
         boolean mailSent = false;
-        AuthDAO dao = new AuthDAO();
         PasswordVerificationDetail pvd = dao.getPasswordVerificationDetail(email);
         if(pvd != null){
             //Password verification detail exists, proceed to send email
@@ -221,7 +212,6 @@ public class AuthService {
 
     //Completes registration if uid matches and is within timerange
     public EmailVerificationDetail completeRegistration(String uid){
-        AuthDAO dao = new AuthDAO();
         EmailVerificationDetail evd = dao.getEmailToken(uid);
         logger.info(evd.toString());
         if(evd != null){
@@ -244,26 +234,22 @@ public class AuthService {
     }
 
     //After registration status is updated, remove current record
-    public boolean removeEmailVerificationRecord(String uid){
-        AuthDAO dao = new AuthDAO();
+    public boolean removeEmailVerificationRecord(String uid){ 
         return dao.removeEmailVerificationRecord(uid);
     }
 
     //Updates the newly registered user's verification status
-    private boolean verificationStatusUpdated(String email){
-        AuthDAO dao = new AuthDAO();
+    private boolean verificationStatusUpdated(String email){  
         return dao.updateUserVerificationStatus(email);
     }
 
     //Checks user verification status
     public String checkUserVerificationStatus(String email){
-        AuthDAO dao = new AuthDAO();
         return dao.checkUserVerificationStatus(email);
     }
 
     //Checks if a username is taken in the db
     public boolean checkIfUsernameTaken(String username){
-        AuthDAO dao = new AuthDAO();
         return dao.checkIfUsernameTaken(username);
     }
 
@@ -275,7 +261,6 @@ public class AuthService {
             return false;
         }
         
-        AuthDAO dao = new AuthDAO();
         return dao.updateUsername(id, username);
     }
 
@@ -288,7 +273,6 @@ public class AuthService {
         }
 
         //Look for matching record in password reset table
-        AuthDAO dao = new AuthDAO();
         PasswordVerificationDetail pvd = dao.getPasswordVerificationRecord(token); 
         if(pvd != null){
             logger.info("Password verification record is populated");
@@ -331,7 +315,18 @@ public class AuthService {
 
     //Delete the old password reset token
     public boolean deletePassworeResetToken(String token){
-        AuthDAO dao = new AuthDAO();
         return dao.deletePasswordResetEmailTokenAfterSuccess(token);
+    }
+
+    //Attempt to authenticate a user for admin access
+    public ArrayList<String> authenticateAdmin(String username){
+        int isAdmin = dao.adminAuthenticate(username);
+        if(isAdmin == 1){
+            //User is marked as an admin, retrieve password from db and return
+            logger.info("User is an admin, returning hashed pw and salt");
+            return dao.getPasswordDetails(username);
+        }
+        logger.info("User is not an admin, returning empty string...");
+        return null;
     }
 }

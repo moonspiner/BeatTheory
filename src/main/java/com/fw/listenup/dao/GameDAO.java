@@ -34,7 +34,7 @@ public class GameDAO extends DAOBase{
                     "    scores.total_attempted, " +
                     "    scores.accuracy, " +
                     "    scores.time_submitted, " +
-                    "    ROW_NUMBER() OVER (PARTITION BY scores.game_id, u.username ORDER BY scores.game_id ASC, scores.score DESC) AS rn " +
+                    "    ROW_NUMBER() OVER (PARTITION BY scores.game_id, u.username, scores.difficulty ORDER BY scores.score DESC, scores.time_submitted DESC) AS rn " +
                     "FROM scores " +
                     "INNER JOIN user AS u ON scores.user_id = u.id " +
                 ") " +
@@ -81,11 +81,11 @@ public class GameDAO extends DAOBase{
             logger.info("Calling db for score details");
             String query = "SELECT s.game_id, s.score, s.difficulty, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
                 "FROM ( " +
-                    "SELECT scores.game_id, scores.user_id, MAX(scores.score) AS max_score " +
+                    "SELECT scores.game_id, scores.user_id, scores.difficulty, MAX(scores.score) AS max_score " +
                     "FROM scores " +
                     "INNER JOIN user ON scores.user_id = user.id " +
                     "WHERE username = ? " +
-                    "GROUP BY scores.game_id " +
+                    "GROUP BY scores.game_id, scores.difficulty, scores.user_id " +
                 ") AS max_scores " +
                 "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_score = s.score AND max_scores.user_id = s.user_id " +
                 "ORDER BY s.game_id";

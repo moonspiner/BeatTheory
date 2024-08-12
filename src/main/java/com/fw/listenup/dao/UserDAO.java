@@ -6,10 +6,12 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+import java.util.ArrayList;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+
+import com.fw.listenup.models.user.UserRecord;
 
 import ch.qos.logback.classic.Logger;
 
@@ -80,6 +82,30 @@ public class UserDAO extends DAOBase{
             logConnectionError(e);
             return false;
         }
+    }
+
+    //Returns a list of all users
+    public ArrayList<UserRecord> getUserList(){
+        ArrayList<UserRecord> users = new ArrayList<UserRecord>();
+        try(Connection con = getConnection()){
+            String query = "select id, username, email, verification_status from user order by id asc";
+            PreparedStatement stmt = con.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+
+            while(rs.next()){
+                int id = rs.getInt("id");
+                String username = rs.getString("username");
+                String email = rs.getString("email");
+                int verificationStatus = rs.getInt("verification_status");
+
+                UserRecord user = new UserRecord(id, username, email, verificationStatus);
+                users.add(user);
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return users;
     }
 
 }

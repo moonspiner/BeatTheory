@@ -1,5 +1,6 @@
 package com.fw.listenup.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -278,8 +279,35 @@ public class AuthController {
             if(CommonUtil.isEmpty(token)) logger.info("User is not verified");
             res.put(resKey, token);
         } catch(Exception e){
-            logger.error("Error with retrieving user verification status");
+            logger.error("Error with retrieving user verification status: " + e.toString());
             res.put(resKey, "");
+        }
+
+        return res;
+    }
+
+    //Check for admin status
+    @PostMapping("authenticateAdmin")
+    public Map<String, String> authenticateAdmin(@RequestParam String username){
+        logger.info("Attempting to authenticate user " + username +  " for admin access");
+        Map<String, String> res = new HashMap<String, String>();
+        try{
+            ArrayList<String> adminPwDetails = this.authService.authenticateAdmin(username);
+
+            //Return empty values if the password details could not be retrieved
+            if(adminPwDetails == null || adminPwDetails.size() < 2){
+                logger.error("Password details could not be retrieved for user " + username);
+                res.put("pw", "");
+                res.put("salt", "");
+            } else {
+                String hashedPw = adminPwDetails.get(0);
+                String salt = adminPwDetails.get(1);
+                res.put("pw", hashedPw);
+                res.put("salt", salt);
+            }
+
+        } catch(Exception e){
+            logger.error("Error with authenticating user for admin access: " + e.toString());
         }
 
         return res;

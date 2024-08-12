@@ -3,11 +3,14 @@ package com.fw.listenup.controllers;
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fw.listenup.models.user.UserRecord;
 import com.fw.listenup.services.UserService;
 import com.fw.listenup.util.CommonUtil;
 
@@ -71,4 +75,21 @@ public class UserController {
         res.put("updateSuccessful", updateSuccessful);
         return res;
     }
+
+    //Returns all of the user records in the database
+    @GetMapping("listUsers")
+    public ResponseEntity<ArrayList<UserRecord>> getUserList(){
+        logger.info("Retrieving all users from database");
+        ArrayList<UserRecord> users = this.userService.getUserList();
+        logger.info("Total user count: " + users.size());
+
+        if(users.size() > 0){
+            logger.info("Users successfully retrieved");
+            return ResponseEntity.ok(users);
+        }
+
+        //Array list is empty, so return an error
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(users);
+    }   
+
 }

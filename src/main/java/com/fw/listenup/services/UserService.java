@@ -5,12 +5,14 @@ import ch.qos.logback.classic.Logger;
 import java.sql.Blob;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fw.listenup.dao.UserDAO;
+import com.fw.listenup.models.user.UserRecord;
 
 @Service
 public class UserService {
@@ -51,5 +53,10 @@ public class UserService {
         }
         boolean picIsSet = dao.setUserProfilePicture(img, username);
         return picIsSet;
+    }
+
+    //Lists all user records in the database
+    public ArrayList<UserRecord> getUserList(){
+        return dao.getUserList();
     }
 }

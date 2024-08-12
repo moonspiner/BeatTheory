@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -589,7 +590,7 @@ public class AuthDAO extends DAOBase{
 
                 //Confirms that the user has verified their email address
                 if(status == 1){
-                    return JwtUtil.generateToken(email, 3600000);
+                    return JwtUtil.generateEmailToken(email, 3600000);
                 }
             } else{
                 logger.error("No results were found, returning false");
@@ -685,5 +686,52 @@ public class AuthDAO extends DAOBase{
 
 
         return isUpdated;
+    }
+
+    //Get the admin status of the user
+    public int adminAuthenticate(String username){
+        int isAdmin = 0;
+        try(Connection con = getConnection()){
+            String query = "select admin from user where username = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                isAdmin = rs.getInt("admin");
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return isAdmin;
+    }
+
+    //Get password and salt based on username
+    public ArrayList<String> getPasswordDetails(String username){
+        ArrayList<String> passwordDetails = new ArrayList<String>();
+        String pw = "";
+        String salt = "";
+        try(Connection con = getConnection()){
+            String query = "select password, salt from user where username = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, username);
+
+            ResultSet rs = stmt.executeQuery();
+            if(rs.next()){
+                pw = rs.getString("password");
+                salt = rs.getString("salt");
+
+                //Only add password details if values returned non-empty
+                if(!CommonUtil.isEmpty(pw) && !CommonUtil.isEmpty(salt)){
+                    passwordDetails.add(pw);
+                    passwordDetails.add(salt);
+                }
+            }
+        } catch(SQLException e){
+            logConnectionError(e);
+        }
+
+        return passwordDetails;
     }
 }
