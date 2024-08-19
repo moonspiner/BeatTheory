@@ -230,6 +230,17 @@ public class AuthController {
         return res;
     }
 
+    //Update user's password with their ID
+    @PostMapping("updatePasswordWithID")
+    public Map<String, Boolean> updatePasswordWithID(@RequestParam String id, @RequestParam String pw){
+        logger.info("Updating user password for id " + id);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "passwordUpdated";
+        boolean passwordUpdated = authService.updatePasswordWithID(id, pw);
+        res.put(resKey, passwordUpdated);
+        return res;
+    }
+
     //Delete the old password token
     @PostMapping("deletePasswordResetToken")
     public Map<String, Boolean> deletePasswordResetToken(@RequestParam String token){

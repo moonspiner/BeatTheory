@@ -688,6 +688,27 @@ public class AuthDAO extends DAOBase{
         return isUpdated;
     }
 
+    //Update the user's password in the user table given their ID
+    public boolean updatePasswordWithID(String id, String pw, String salt){
+        boolean isUpdated = false;
+
+        try(Connection con = getConnection()){
+            String query = "update user set password = ?, salt = ? where id = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, pw);
+            stmt.setString(2, salt);
+            stmt.setString(3, id); 
+
+            int rowsAffected = stmt.executeUpdate();
+            isUpdated = rowsAffected > 0;
+        } catch (SQLException e){
+            logConnectionError(e);
+        }
+
+
+        return isUpdated;
+    }
+
     //Get the admin status of the user
     public int adminAuthenticate(String username){
         int isAdmin = 0;

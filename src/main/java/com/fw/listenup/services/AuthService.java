@@ -313,6 +313,27 @@ public class AuthService {
         return false;
     }
 
+    //Update user's password given their id
+    public boolean updatePasswordWithID(String id, String pw){
+        try{
+            //Hash and salt the password
+            byte[] salt = generateSalt();
+            String saltString = bytesToHex(salt);
+            String saltedPw = pw + saltString;
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashedBytes = md.digest(saltedPw.getBytes());
+            String hashedPw = bytesToHex(hashedBytes);
+
+            //Call update statement in the database
+            boolean isUpdated = dao.updatePasswordWithID(id, hashedPw, saltString);
+            if(!isUpdated) logger.error("There was an error with updating the new password in the database");
+            return isUpdated;
+        } catch(NoSuchAlgorithmException e){
+            logger.error("There was an error with hashing the new password: " + e.toString());
+            return false;
+        }
+    }
+
     //Delete the old password reset token
     public boolean deletePassworeResetToken(String token){
         return dao.deletePasswordResetEmailTokenAfterSuccess(token);
