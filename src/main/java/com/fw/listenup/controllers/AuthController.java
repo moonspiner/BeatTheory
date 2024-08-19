@@ -258,6 +258,17 @@ public class AuthController {
         return res;
     }
 
+    //Update user's verification staus (admin console) 
+    @PostMapping("verifyEmail")
+    public Map<String, Boolean> verifyUserEmail(@RequestParam String id){
+        logger.info("Updating verification status for user " + id);
+        Map<String, Boolean> res = new HashMap<String, Boolean>();
+        String resKey = "emailVerified";
+        boolean emailVerified = authService.verifyUserEmail(id);
+        res.put(resKey, emailVerified);
+        return res;
+    }
+
     //Registers user when they navigate to email link
     @PostMapping("registerToken")
     public ResponseEntity<Boolean> completeRegistration(@RequestParam String uid, HttpServletResponse response){

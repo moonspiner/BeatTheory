@@ -709,6 +709,24 @@ public class AuthDAO extends DAOBase{
         return isUpdated;
     }
 
+    //Update the verification status to '1' for the user
+    public boolean verifyUserEmail(String id){
+        boolean isVerified = false;
+
+        try(Connection con = getConnection()){
+            String query = "update user set verification_status = 1 where id = ?";
+            PreparedStatement stmt = con.prepareStatement(query);
+            stmt.setString(1, id);
+
+            int rowsAffected = stmt.executeUpdate();
+            isVerified = rowsAffected > 0;
+        } catch (SQLException e){
+            logConnectionError(e);
+        }
+
+        return isVerified;
+    }
+
     //Get the admin status of the user
     public int adminAuthenticate(String username){
         int isAdmin = 0;

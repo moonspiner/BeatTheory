@@ -334,6 +334,12 @@ public class AuthService {
         }
     }
 
+    //Verify user's email
+    public boolean verifyUserEmail(String id){
+        boolean verificationSuccessful = dao.verifyUserEmail(id);
+        return verificationSuccessful;
+    }
+
     //Delete the old password reset token
     public boolean deletePassworeResetToken(String token){
         return dao.deletePasswordResetEmailTokenAfterSuccess(token);
