@@ -79,17 +79,20 @@ public class GameDAO extends DAOBase{
         ArrayList<LeaderboardRecord> scores = new ArrayList<LeaderboardRecord>();
         try(Connection con = getConnection()){
             logger.info("Calling db for score details");
-            String query = "SELECT s.game_id, s.score, s.difficulty, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
-                "FROM ( " +
-                    "SELECT scores.game_id, scores.user_id, scores.difficulty, MAX(scores.score) AS max_score " +
-                    "FROM scores " +
-                    "INNER JOIN user ON scores.user_id = user.id " +
-                    "WHERE username = ? " +
-                    "GROUP BY scores.game_id, scores.difficulty, scores.user_id " +
-                ") AS max_scores " +
-                "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_score = s.score AND max_scores.user_id = s.user_id " +
-                "ORDER BY s.game_id";
-
+            // String query = "SELECT s.game_id, s.score, s.difficulty, s.total_correct, s.total_attempted, s.accuracy, s.time_submitted " +
+            //     "FROM ( " +
+            //         "SELECT scores.game_id, scores.user_id, scores.difficulty, MAX(scores.score) AS max_score " +
+            //         "FROM scores " +
+            //         "INNER JOIN user ON scores.user_id = user.id " +
+            //         "WHERE username = ? " +
+            //         "GROUP BY scores.game_id, scores.difficulty, scores.user_id " +
+            //     ") AS max_scores " +
+            //     "INNER JOIN scores AS s ON max_scores.game_id = s.game_id AND max_scores.max_score = s.score AND max_scores.user_id = s.user_id " +
+            //     "ORDER BY s.game_id";
+            String query = "SELECT     s.game_id,     s.score,     s.difficulty,     s.total_correct,     s.total_attempted,     s.accuracy,     s.time_submitted FROM " + 
+            "(    SELECT         scores.game_id,         scores.difficulty,         MAX(scores.score) AS max_score, MAX(scores.accuracy) as max_accuracy  FROM scores    " + 
+            "INNER JOIN user ON scores.user_id = user.id    WHERE user.username = ?    GROUP BY scores.game_id, scores.difficulty) AS max_scores INNER JOIN scores AS s     " + 
+            "ON max_scores.game_id = s.game_id     AND max_scores.difficulty = s.difficulty    AND max_scores.max_score = s.score AND max_scores.max_accuracy = s.accuracy ORDER BY s.game_id, s.difficulty";
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
