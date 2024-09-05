@@ -1,6 +1,8 @@
 package com.fw.listenup.services;
 
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,14 @@ public class GameService {
     }
 
     //Service call for setting a new record in the scores table
-    public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, Date timestamp){
-        return dao.setScore(gameId, userId, totalCorrect, totalAttempted, accuracy, timestamp);
+    public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, String timestamp, int difficulty, int score){
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        try{
+            Date date = new Date(format.parse(timestamp).getTime());
+            return dao.setScore(gameId, userId, totalCorrect, totalAttempted, accuracy, date, difficulty, score);
+        } catch(ParseException e){
+            logger.error("error with parsing the date: " + e.toString());
+            return false;
+        }
     }
 }

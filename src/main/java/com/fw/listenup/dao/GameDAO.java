@@ -122,12 +122,12 @@ public class GameDAO extends DAOBase{
     }
 
     //Sets a new record in the scores table
-    public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, Date timestamp){
+    public boolean setScore(int gameId, int userId, int totalCorrect, int totalAttempted, String accuracy, Date timestamp, int difficulty, int score){
         boolean res = false;
         try(Connection con = getConnection()){
             logger.info("Setting new score record");
-            String query = "insert into scores (game_id, user_id, total_correct, total_attempted, accuracy, time_submitted) " + 
-            "values (?,?,?,?,?,?)";
+            String query = "insert into scores (game_id, user_id, total_correct, total_attempted, accuracy, time_submitted, difficulty, score) " + 
+            "values (?,?,?,?,?,?,?,?)";
 
             PreparedStatement stmt = con.prepareStatement(query);
             stmt.setInt(1, gameId);
@@ -136,6 +136,8 @@ public class GameDAO extends DAOBase{
             stmt.setInt(4, totalAttempted);
             stmt.setString(5, accuracy);
             stmt.setDate(6, timestamp);
+            stmt.setInt(7, difficulty);
+            stmt.setInt(8, score);
             stmt.execute();
             
             res = true;

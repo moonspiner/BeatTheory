@@ -1,6 +1,5 @@
 package com.fw.listenup.controllers;
 
-import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,9 +63,10 @@ public class GameController {
     //Sets a new record into the score table
     @PostMapping("scores/setScore")
     public Map<String, Boolean> setScore(@RequestParam int gameId, @RequestParam int userId, @RequestParam int totalCorrect,
-                                      @RequestParam int totalAttempted, @RequestParam String accuracy, @RequestParam Date timestamp){
+                                      @RequestParam int totalAttempted, @RequestParam String accuracy, @RequestParam String timestamp,
+                                      @RequestParam int difficulty, @RequestParam int score){
         Map<String, Boolean> res = new HashMap<String, Boolean>();
-        boolean val = this.gameService.setScore(gameId, userId, totalCorrect, totalAttempted, accuracy, timestamp);
+        boolean val = this.gameService.setScore(gameId, userId, totalCorrect, totalAttempted, accuracy, timestamp, difficulty, score);
         res.put("scoreSet", val);
         return res;
     }
