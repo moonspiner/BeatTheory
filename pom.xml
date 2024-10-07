@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.fw</groupId>
-	<artifactId>listenup</artifactId>
+	<artifactId>beattheory</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>listenup</name>
-	<description>Backend for ListenUp webservice</description>
+	<name>beattheory</name>
+	<description>Backend for BeatTheory webservice</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties> 
