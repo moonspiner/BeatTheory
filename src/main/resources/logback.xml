@@ -1,6 +1,6 @@
 <configuration>
     <property name="LOG_ROOT" value="logs" />
-    <property name="LOG_FILE_NAME" value="listenup" />
+    <property name="LOG_FILE_NAME" value="beattheory" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>

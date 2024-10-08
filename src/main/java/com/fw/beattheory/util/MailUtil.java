@@ -62,7 +62,7 @@ public class MailUtil {
             emailTemplate.setSSLOnConnect(true); // Use SSL
             emailTemplate.setFrom(senderEmail);
             emailTemplate.addTo(evd.getEmail());
-            emailTemplate.setSubject("beattheory - Verify your Account");
+            emailTemplate.setSubject("BeatTheory - Verify your Account");
             emailTemplate.setHtmlMsg(processedHtml);
 
             // Send the email
@@ -96,7 +96,7 @@ public class MailUtil {
             emailTemplate.setSSLOnConnect(true); // Use SSL
             emailTemplate.setFrom(senderEmail);
             emailTemplate.addTo(pvd.getEmail());
-            emailTemplate.setSubject("beattheory - Reset your Password");
+            emailTemplate.setSubject("BeatTheory - Reset your Password");
             emailTemplate.setHtmlMsg(processedHtml);
 
             // Send the email
