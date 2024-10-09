@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Template</title>
+</head>
+<body>
+    <h1 th:text="${helloUser}">Hello,</h1>
+    <p>Thank you for registering with BeatTheory.  To complete your registration, please click this link: </p>
+    <a th:text="${link}" th:href="${link}"></a>
+    <p>If you experience any issues with the registration link, either request a new link on our website or contact us directly.</p>
+    <p>A new link can be requested by attempting to log in and clicking 'Click here to resend'.  You can also contact us at 
+        foolishwizard.csr@gmail.com to request verification.
+    </p>
+
+</body>
+</html>
