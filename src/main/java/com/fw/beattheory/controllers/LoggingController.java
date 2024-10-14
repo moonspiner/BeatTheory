@@ -1,11 +1,14 @@
 package com.fw.beattheory.controllers;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
 @RequestMapping("/api/v1/logging")
+@CrossOrigin(origins = "https://beattheorymusic.com")
+
 public class LoggingController{
 
     // private final LoggingDAO dao;
