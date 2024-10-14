@@ -5,14 +5,20 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import ch.qos.logback.classic.Logger;
 
 public class DAOBase {
     protected final static Logger logger = (Logger) LoggerFactory.getLogger(DAOBase.class);
-    protected final String url = "jdbc:mysql://localhost:3306/lusit";
-    protected final String root = "root";
-    protected final String db_pw = "istyv123";
+    @Value("${spring.datasource.url}")
+    protected String url;
+
+    @Value("${spring.datasource.username}")
+    protected String root;
+
+    @Value("${spring.datasource.password}")
+    protected String db_pw;
 
     protected Connection getConnection(){
         try{
