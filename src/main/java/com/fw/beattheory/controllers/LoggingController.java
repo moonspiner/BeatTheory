@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/logging")
-@CrossOrigin(origins = "https://beattheorymusic.com")
+@CrossOrigin(origins = {"https://beattheorymusic.com", "https://www.beattheorymusic.com"})
 
 public class LoggingController{
 
