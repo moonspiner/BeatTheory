@@ -28,7 +28,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/api/v1/auth/")
-@CrossOrigin(origins = "https://beattheorymusic.com")
+@CrossOrigin(origins = {"https://beattheorymusic.com", "https://www.beattheorymusic.com"})
 public class AuthController {
     private final AuthService authService;
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthController.class);
