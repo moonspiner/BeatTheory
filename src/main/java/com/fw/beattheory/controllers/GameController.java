@@ -24,7 +24,7 @@ import ch.qos.logback.classic.Logger;
 
 @RestController
 @RequestMapping("/api/v1/game/")
-@CrossOrigin(origins = "https://beattheorymusic.com")
+@CrossOrigin(origins = {"https://beattheorymusic.com", "https://www.beattheorymusic.com"})
 public class GameController {
     private final GameService gameService;
     private static final Logger logger = (Logger) LoggerFactory.getLogger(GameController.class);
