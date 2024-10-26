@@ -29,7 +29,7 @@ import ch.qos.logback.classic.Logger;
 //Controller class for making user-related db transactions
 @RestController
 @RequestMapping("/api/v1/user/")
-@CrossOrigin(origins = "https://beattheorymusic.com")
+@CrossOrigin(origins = {"https://beattheorymusic.com", "https://www.beattheorymusic.com"})
 public class UserController {
     private final UserService userService;
     private static final Logger logger = (Logger) LoggerFactory.getLogger(UserController.class);
